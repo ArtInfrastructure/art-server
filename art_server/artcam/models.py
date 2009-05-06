@@ -34,7 +34,7 @@ class Artcam(models.Model):
 	name = models.CharField(max_length=1024, null=True, blank=True)
 	ip = models.IPAddressField(blank=False, null=True)
 	def update_photo(self):
-		url = 'http://public:1nsecure@%s/axis-cgi/jpg/image.cgi' % self.ip
+		url = 'http://%s:%s@%s/axis-cgi/jpg/image.cgi' % (settings.ARTCAM_PUBLIC_USERNAME, settings.ARTCAM_PUBLIC_PASSWORD, self.ip)
 		filename, headers = urllib.urlretrieve(url)
 		photo = ArtcamPhoto(artcam=self)
 		image_file = file(filename, 'r')
