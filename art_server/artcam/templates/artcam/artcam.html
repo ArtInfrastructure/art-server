@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load imagetags %}
+{% block sub-title %}ArtCam | {% endblock %}
+
+{% block style %}
+.artcam-image { width: 220px; height: 210px; float: left; }
+.artcam-image img { margin-bottom: 5px;  }
+{% endblock %}
+
+{% block sub-head %}
+<script type="text/javascript">
+function triggerArtcamUpdate() {
+	$.ajax({
+		type: "GET",
+		url: "{{ artcam.get_update_url }}",
+		success: function(msg){ window.location.reload(); }
+		
+	});
+}
+</script>
+{% endblock %}
+
+{% block content%}
+<h1><a href="{% url artcam.views.index %}">ArtCams</a> &raquo; {{ artcam.name }}:</h1>
+<form style="display: inline;"><input type="submit" value="update" onclick="triggerArtcamUpdate(); return false;" /></form>
+<a href="http://{{ artcam.ip }}/">Direct Link to Camera</a><br />
+<br/>
+
+
+{% for photo in artcam.artcamphoto_set.all|slice:":9" %}
+	<div class="artcam-image">
+		<a href="{{ photo.get_absolute_url }}">
+			<img src="{{ photo.image.url|fit_image:"200x200" }}" />
+		</a>
+		{{ photo.created|date:"M d - g:i A" }}
+	</div>
+{% endfor %}
+
+{% endblock %}
+
+/* Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */

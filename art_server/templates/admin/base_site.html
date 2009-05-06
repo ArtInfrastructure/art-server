@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | {{ site.name }} administration{% endblock %}
+
+{% block extrastyle %}
+<style type="text/css">
+#header { background-color: #FFF; color: rgb(102, 102, 102); }
+#header, #header h1, #header a:link, #header a:visited { color: rgb(102, 102, 102); font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="/">Site</a> › {{ site.name }} administration</h1>
+{% endblock %}

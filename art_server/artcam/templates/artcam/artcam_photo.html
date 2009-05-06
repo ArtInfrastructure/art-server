@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load imagetags %}
+{% block sub-title %}ArtCam Photo | {{ photo }} | {% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content%}
+<h1><a href="{% url artcam.views.artcam photo.artcam.id %}">{{ photo.artcam.name }}</a> &raquo; {{ photo }}:</h1>
+
+<img src="{{ photo.image.url|fit_image:"800x800" }}" />
+<br />
+<a href="{{ photo.image.url }}">original image</a>
+{% endblock %}
+
+/* Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */

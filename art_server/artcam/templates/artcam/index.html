@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load imagetags %}
+{% block sub-title %}ArtCams | {% endblock %}
+
+{% block style %}
+.artcam { float: left; margin-right: 20px; border: solid 1px #DDD; padding: 5px; }
+.artcam-image { width: 100px; height: 100px; }
+{% endblock %}
+
+{% block content%}
+<h1>ArtCams:</h1>
+
+{% for artcam in artcams %}
+	<div class="artcam">
+		<h2><a href="{{ artcam.get_absolute_url }}">{{ artcam.name }}</a></h2>
+		<div class="artcam-image">
+			{% if artcam.latest_photo %}
+				<a href="{{ artcam.get_absolute_url }}">
+					<img src="{{ artcam.latest_photo.image.url|thumbnail:"100w" }}" />
+				</a>
+			{% endif %}
+		</div>
+	</div>
+{% endfor %}
+
+{% endblock %}
+
+/* Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */
