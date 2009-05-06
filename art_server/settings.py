@@ -1,9 +1,5 @@
-# Django settings for art cloud project.
 import traceback
 import pprint
-
-
-HEARTBEAT_TIMEOUT = 10 # in seconds
 
 ADMINS = (
     ('Trevor F. Smith', 'trevor@trevor.smith.name'),
@@ -25,11 +21,6 @@ USE_I18N = True
 MEDIA_URL = '/media/'
 
 ADMIN_MEDIA_PREFIX = '/admin-media/'
-
-FORCE_LOWERCASE_TAGS = True
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'p=$i77rnyk76a!_7o1@a)5341k5$r#ffece68(wvog_ozjyc^%'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
