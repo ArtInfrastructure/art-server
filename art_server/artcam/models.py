@@ -33,8 +33,12 @@ import art_server.front.templatetags.imagetags as imagetags
 class Artcam(models.Model):
 	name = models.CharField(max_length=1024, null=True, blank=True)
 	ip = models.IPAddressField(blank=False, null=True)
+	port = models.IntegerField(blank=True, null=True)
+	def domain(self):
+		if not self.port or self.port == 80: return str(self.ip)
+		return '%s:%s' % (self.ip, self.port)
 	def update_photo(self):
-		url = 'http://%s:%s@%s/axis-cgi/jpg/image.cgi' % (settings.ARTCAM_PUBLIC_USERNAME, settings.ARTCAM_PUBLIC_PASSWORD, self.ip)
+		url = 'http://%s:%s@%s/axis-cgi/jpg/image.cgi' % (settings.ARTCAM_PUBLIC_USERNAME, settings.ARTCAM_PUBLIC_PASSWORD, self.domain())
 		filename, headers = urllib.urlretrieve(url)
 		photo = ArtcamPhoto(artcam=self)
 		image_file = file(filename, 'r')

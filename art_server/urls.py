@@ -13,6 +13,7 @@ urlpatterns = patterns('',
 	(r'^accounts/profile/$', 'django.views.generic.simple.redirect_to', {'url': '/'}),
 	(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 
-	(r'^$', include('front.urls')),
+	(r'^ground/', include('ground.urls')),
 	(r'^artcam/', include('artcam.urls')),
+	(r'^$', include('front.urls')),
 )

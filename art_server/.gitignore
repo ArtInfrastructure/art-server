@@ -1,3 +1,5 @@
+ground
+front/fixtures/*
 local_settings.py
 devel_settings.py
 media/resized_image/*

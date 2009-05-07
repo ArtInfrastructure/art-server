@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% load imagetags %}
-{% block sub-title %}ArtCam Photo | {{ photo }} | {% endblock %}
+{% block sub-title %}{{ artcam.name }} | Stream | {% endblock %}
 
 {% block style %}
+.artcam-image { width: 220px; height: 210px; float: left; }
+.artcam-image img { margin-bottom: 5px;  }
 {% endblock %}
 
 {% block content%}
-<h1><a href="{% url artcam.views.index %}">ArtCams</a> &raquo; <a href="{% url artcam.views.artcam photo.artcam.id %}">{{ photo.artcam.name }}</a> &raquo; {{ photo }}:</h1>
+<h1><a href="{% url artcam.views.index %}">ArtCams</a> &raquo; <a href="{{ artcam.get_absolute_url}}">{{ artcam.name }}</a> &raquo: Stream</h1>
 
-<img src="{{ photo.image.url|fit_image:"800x800" }}" />
-<br />
-<a href="{{ photo.image.url }}">original image</a>
+<img id="stream" src="http://{{ artcam.domain }}/mjpg/video.mjpg" width="640" height="480" border="0" alt="If no image is displayed, there might be too many viewers.">
+
 {% endblock %}
 
 /* Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */

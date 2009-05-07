@@ -30,6 +30,10 @@ from forms import *
 def index(request):
 	return render_to_response('artcam/index.html', { 'artcams':Artcam.objects.all() }, context_instance=RequestContext(request))
 
+def artcam_video(request, id):
+	artcam = get_object_or_404(Artcam, pk=id)
+	return render_to_response('artcam/artcam_video.html', { 'artcam':artcam }, context_instance=RequestContext(request))
+
 def artcam(request, id):
 	artcam = get_object_or_404(Artcam, pk=id)
 	if request.GET.get('action', None) == 'update':

@@ -11,7 +11,7 @@ class StyledModelAdmin(admin.ModelAdmin):
 		css = { "all": ('admin.css', )}
 
 class ArtcamAdmin(StyledModelAdmin):
-	list_display = ('name', 'ip')
+	list_display = ('name', 'ip', 'port')
 admin.site.register(Artcam, ArtcamAdmin)	
 
 class ArtcamPhotoAdmin(StyledModelAdmin):

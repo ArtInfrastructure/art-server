@@ -4,8 +4,17 @@ from django.conf import settings
 
 from models import *
 
+class TestObj:
+	def __init__(self):
+		self.foo = 'bar'
+		self.bar = 'baz'
+	class HydrationMeta:
+		attributes = ('foo', 'bar')
+
 urlpatterns = patterns('',
+	(r'^api/test/$', 'ground.views.podo', { 'podo':TestObj }),
 	(r'^(?P<id>[\d]+)/$', 'artcam.views.artcam'),
 	(r'^(?P<artcam_id>[\d]+)/photo/(?P<photo_id>[\d]+)/$', 'artcam.views.artcam_photo'),
+	(r'^(?P<id>[\d]+)/video/$', 'artcam.views.artcam_video'),
 	(r'^$', 'artcam.views.index'),
 )
