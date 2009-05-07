@@ -1,6 +1,7 @@
 ground
 front/fixtures/*
 local_settings.py
+release_settings.py
 devel_settings.py
 media/resized_image/*
 media/artcam_photo/*
