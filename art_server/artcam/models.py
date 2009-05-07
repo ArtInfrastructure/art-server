@@ -34,11 +34,14 @@ class Artcam(models.Model):
 	name = models.CharField(max_length=1024, null=True, blank=True)
 	ip = models.IPAddressField(blank=False, null=True)
 	port = models.IntegerField(blank=True, null=True)
-	def domain(self):
+
+	def __get_domain(self):
 		if not self.port or self.port == 80: return str(self.ip)
 		return '%s:%s' % (self.ip, self.port)
+	def __set_domain(self): pass
+	domain = property(__get_domain, __set_domain)
 	def update_photo(self):
-		url = 'http://%s:%s@%s/axis-cgi/jpg/image.cgi' % (settings.ARTCAM_PUBLIC_USERNAME, settings.ARTCAM_PUBLIC_PASSWORD, self.domain())
+		url = 'http://%s:%s@%s/axis-cgi/jpg/image.cgi' % (settings.ARTCAM_PUBLIC_USERNAME, settings.ARTCAM_PUBLIC_PASSWORD, self.domain)
 		filename, headers = urllib.urlretrieve(url)
 		photo = ArtcamPhoto(artcam=self)
 		image_file = file(filename, 'r')
@@ -58,7 +61,8 @@ class Artcam(models.Model):
 		return ('artcam.views.artcam', (), { 'id':self.id })
 	class Meta:
 		ordering = ['name']
-	
+	class HydrationMeta:
+		attributes = ('name', 'domain')
 
 class ThumbnailedModel(models.Model):
 	"""An abstract base class for models with an ImageField named "image" """
@@ -90,6 +94,7 @@ class ArtcamPhoto(ThumbnailedModel):
 		ordering = ['-created']
 	class HydrationMeta:
 		attributes = ['id', 'created']
+		ref_attributes = ['artcam']
 		nodes = ['image']
 	def __unicode__(self):
 		return str(self.image)
