@@ -1,11 +1,10 @@
 import traceback
 import pprint
+import os
 
-ADMINS = (
-    ('Trevor F. Smith', 'trevor@trevor.smith.name'),
-)
-
-MANAGERS = ADMINS
+PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
+MEDIA_ROOT = PROJECT_ROOT + '/media/'
+TEMPLATE_DIRS = ( PROJECT_ROOT + '/templates/', )
 
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 TIME_ZONE = 'America/Vancouver'
@@ -57,6 +56,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
 	'django.contrib.admin',
 	'art_server.ground',
+	'art_server.iboot',
 	'art_server.artcam',
 	'art_server.front',
 )

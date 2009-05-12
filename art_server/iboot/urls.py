@@ -2,19 +2,8 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 
-from django.contrib import admin
-admin.autodiscover()
+from models import *
 
 urlpatterns = patterns('',
-	# (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-	(r'^admin/(.*)', admin.site.root),
-	(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'login.html'}),
-	(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login'),
-	(r'^accounts/profile/$', 'django.views.generic.simple.redirect_to', {'url': '/'}),
-	(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
-
-	(r'^ground/', include('ground.urls')),
-	(r'^iboot/', include('iboot.urls')),
-	(r'^artcam/', include('artcam.urls')),
-	(r'^$', include('front.urls')),
+	(r'^(?P<id>[\d]+)/$', 'iboot.views.iboot'),
 )
