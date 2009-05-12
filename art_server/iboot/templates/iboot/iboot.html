@@ -9,6 +9,7 @@
 {% block content%}
 <h1>{{ iboot.name }}</h1>
 <table>
+	<tr><th>Host Address:</th><td><a href="http://{{ iboot.ip }}/">{{ iboot.ip }}</a></td></tr>
 	<tr><th>MAC Address:</th><td>{{ iboot.mac_address }}</td></tr>
 	<tr><th>On:</th>
 		<td>
