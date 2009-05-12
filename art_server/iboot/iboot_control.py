@@ -1,14 +1,15 @@
 import telnetlib
 import pprint
 import traceback
+import socket
 
 class IBootControl:
 	"""A control object for Dataprobe's iBoot network attached remote power controller"""
-	def __init__(self, host, port, password):
+	def __init__(self,  password, host, port=80):
 		"""The port should be the telnet port, not the http or heartbeat port"""
+		self.password = password
 		self.host = host
 		self.port = port
-		self.password = password
 
 	def query_iboot_state(self):
 		"""Returns True if it is on, False if it is off, None if it could not be reached"""
@@ -16,27 +17,29 @@ class IBootControl:
 		if result == None: return None
 		return result == 'ON'
 
-	def turn_on(self): return send_command('n') == 'ON'
+	def turn_on(self): return self.send_command('n') == 'ON'
 
-	def turn_off(self): return send_command('f') == 'OFF'
+	def turn_off(self): return self.send_command('f') == 'OFF'
 
-	def cycle_power(self): return send_command('c') == 'CYCLE'
+	def cycle_power(self): return self.send_command('c') == 'CYCLE'
 
 	def send_command(self, command):
 		"Sends a command to the device.  Returns the result code or None if it can't control the device."
-		telnet = telnetlib.Telnet()
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.settimeout(10)
 		try:
-			telnet.open(self.host, self.port)
-			telnet.write(self.format_command(command))
-			value = telnet.read_until('\n', 2)
+			sock.connect((self.host, self.port))
+			msg = self.format_command(command)
+			sock.send(msg)
+			value = sock.recv(20)
 			if value == '': return None
 			return value
 		except:
 			print pprint.pformat(traceback.format_exc()) 
 		finally:
-			telnet.close()
+			sock.close()
 		return None
 
 	def format_command(self, action):
-		return '\x00\x1d%s\x00\x1d%s\x00\x0d' % (self.password, action)
+		return '\x1b%s\x1b%s\x0d' % (self.password, action)
 
