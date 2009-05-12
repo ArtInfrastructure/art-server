@@ -25,7 +25,12 @@ from django.template.loader import render_to_string
 from django.utils import feedgenerator
 
 from models import *
+from iboot_control import IBootControl
 
 def iboot(request, id):
 	iboot = get_object_or_404(IBootDevice, pk=id)
-	return render_to_response('iboot/iboot.html', { 'iboot':iboot }, context_instance=RequestContext(request))
+	control = IBootControl(settings.IBOOT_POWER_PASSWORD, iboot.ip)
+	if request.method == 'POST':
+		if request.POST.get('action', None) == 'toggle': control.toggle()
+	status = control.query_iboot_state()
+	return render_to_response('iboot/iboot.html', { 'iboot':iboot, 'status':status }, context_instance=RequestContext(request))
