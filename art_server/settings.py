@@ -6,6 +6,8 @@ PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = PROJECT_ROOT + '/media/'
 TEMPLATE_DIRS = ( PROJECT_ROOT + '/templates/', )
 
+SOUTH_AUTO_FREEZE_APP = True
+
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 TIME_ZONE = 'America/Vancouver'
 
@@ -51,6 +53,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
 	'django.contrib.admin',
+	'south',
 	'art_server.ground',
 	'art_server.artcam',
 	'art_server.front',
