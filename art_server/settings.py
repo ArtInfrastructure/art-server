@@ -52,7 +52,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
 	'django.contrib.admin',
 	'art_server.ground',
-	'art_server.iboot',
 	'art_server.artcam',
 	'art_server.front',
 )
