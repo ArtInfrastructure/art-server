@@ -31,6 +31,7 @@ from django.core.urlresolvers import reverse
 import art_server.front.templatetags.imagetags as imagetags
 
 class Artcam(models.Model):
+	"""A network camera."""
 	name = models.CharField(max_length=1024, null=True, blank=True)
 	ip = models.IPAddressField(blank=False, null=True)
 	port = models.IntegerField(blank=True, null=True)
@@ -82,6 +83,7 @@ class ThumbnailedModel(models.Model):
 		abstract = True
 
 class ArtcamPhoto(ThumbnailedModel):
+	"""A photo taked from an ArtCam."""
 	image = models.ImageField(upload_to='artcam_photo', blank=False)
 	artcam = models.ForeignKey(Artcam, blank=False, null=False)
 	created = models.DateTimeField(auto_now_add=True)

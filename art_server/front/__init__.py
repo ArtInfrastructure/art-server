@@ -1,0 +1,1 @@
+"""A (mostly blank) Django app to front the art-server project."""

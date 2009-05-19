@@ -1,0 +1,1 @@
+"""A Django app which pulls data from Axis networked cameras."""
