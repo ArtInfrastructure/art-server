@@ -28,38 +28,57 @@ from django.db.models import Q
 from django.db.models.fields.files import ImageFieldFile
 from django.core.urlresolvers import reverse
 
-class BacnetProperty(models.Model):
-	name = models.CharField(max_length=1024, null=True, blank=True)
-	type_name = models.CharField(max_length=1024, null=True, blank=True)
-	def __unicode__(self):
-		return self.name
-	@models.permalink
-	def get_absolute_url(self):
-		return ('bacnet.views.bacnet_property', (), { 'id':self.id })
-	class Meta:
-		ordering = ['name']
-	
-class BacnetPropertyReading(models.Model):
-	bacnet_property = models.ForeignKey(BacnetProperty, blank=False, null=False)
-	reading = models.CharField(max_length=1024, blank=False, null=False)
-	created = models.DateTimeField(auto_now_add=True)
-	def __unicode__(self):
-		return self.name
-	@models.permalink
-	def get_absolute_url(self):
-		return ('bacnet.views.property_reading', (), { 'id':self.id })
-	class Meta:
-		ordering = ['-created']
-
-class BacnetObject(models.Model):
+class BACnetObject(models.Model):
+	"""The information needed to connect to a BACnet object, of which a device may have many."""
 	name = models.CharField(max_length=1024, null=False, blank=False)
 	address = models.CharField(max_length=1024, null=False, blank=False)
 	type_name = models.CharField(max_length=1024, null=False, blank=False)
-	bacnet_properties = models.ManyToManyField(BacnetProperty, blank=True, null=True)
 	def __unicode__(self):
 		return self.name
 	@models.permalink
 	def get_absolute_url(self):
 		return ('bacnet.views.object_detail', (), { 'id':self.id })
 	class Meta:
+		verbose_name = "BACnet Object"
+		verbose_name_plural = "BACnet Objects"
 		ordering = ['name']
+	class HydrationMeta:
+		attributes = ['id', 'name', 'address', 'type_name']
+
+class BACnetProperty(models.Model):
+	"""An automatically populated record of the properties on a BACnet object."""
+	bacnet_object = models.ForeignKey(BACnetObject, blank=False, null=False, related_name='bacnet_properties')
+	name = models.CharField(max_length=1024, null=True, blank=True)
+	type_name = models.CharField(max_length=1024, null=True, blank=True)
+	reading_frequency = models.IntegerField(default=0, blank=False, null=False)
+	last_reading_attempt = models.DateTimeField(blank=True, null=True, editable=False)
+	def __unicode__(self):
+		return self.name
+	@models.permalink
+	def get_absolute_url(self):
+		return ('bacnet.views.bacnet_property', (), { 'id':self.id })
+	class Meta:
+		verbose_name = "BACnet Property"
+		verbose_name_plural = "BACnet Properties"
+		ordering = ['name']
+	class HydrationMeta:
+		attributes = ['id', 'name', 'reading_frequency', 'last_reading_attempt', 'type_name']
+		ref_attributes = ['bacnet_object']
+
+class BACnetPropertyReading(models.Model):
+	"""A value sampled from a BACnet property, for example a thermostat reading"""
+	bacnet_property = models.ForeignKey(BACnetProperty, blank=False, null=False, related_name='bacnet_property_readings')
+	reading = models.CharField(max_length=1024, blank=False, null=False)
+	created = models.DateTimeField(auto_now_add=True)
+	def __unicode__(self):
+		return '%s: %s' % (self.bacnet_property.name, self.reading)
+	@models.permalink
+	def get_absolute_url(self):
+		return ('bacnet.views.property_reading', (), { 'id':self.id })
+	class Meta:
+		verbose_name = "BACnet Property Reading"
+		verbose_name_plural = "BACnet Property Readings"
+		ordering = ['-created']
+	class HydrationMeta:
+		attributes = ['id', 'reading', 'created']
+		ref_attributes = ['bacnet_property']

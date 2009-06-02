@@ -10,10 +10,14 @@ class StyledModelAdmin(admin.ModelAdmin):
 	class Media:
 		css = { "all": ('admin.css', )}
 
-class BacnetObject(StyledModelAdmin):
-	list_display = ('name', 'typename', 'address')
-admin.site.register(Artcam, ArtcamAdmin)	
+class BACnetObjectAdmin(StyledModelAdmin):
+	pass
+admin.site.register(BACnetObject, BACnetObjectAdmin)	
 
-class ArtcamPhotoAdmin(StyledModelAdmin):
-	list_display = ('image', 'thumb')
-admin.site.register(ArtcamPhoto, ArtcamPhotoAdmin)	
+class BACnetPropertyAdmin(StyledModelAdmin):
+	pass
+admin.site.register(BACnetProperty, BACnetPropertyAdmin)	
+
+class BACnetPropertyReadingAdmin(StyledModelAdmin):
+	pass
+admin.site.register(BACnetPropertyReading, BACnetPropertyReadingAdmin)	

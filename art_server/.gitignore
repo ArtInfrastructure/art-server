@@ -1,4 +1,5 @@
 ground
+hydration.py
 front/fixtures/*
 local_settings.py
 release_settings.py

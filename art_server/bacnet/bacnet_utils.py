@@ -7,6 +7,9 @@ class BACnetHandler:
 	def take_reading(self, address, type, instance, property_name, index=None):
 		"""Attempts to read a property, returning it as a string or None if it times out or is not readable"""
 		pass
+	def list_properties(self, address, type, instance):
+		"""Attempts to fetch a list of an object's properties"""
+		pass
 
 class MockBACnetHandler(BACnetHandler):
 	def __init__(self, timeout=None):
