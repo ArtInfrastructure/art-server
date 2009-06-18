@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
 	'django.contrib.admin',
 	'south',
+	'piston',
 	'art_server.bacnet',
 	'art_server.artcam',
 	'art_server.front',
