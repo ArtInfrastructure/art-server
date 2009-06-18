@@ -15,5 +15,5 @@ urlpatterns = patterns('',
 
 	(r'^bacnet/', include('bacnet.urls')),
 	(r'^artcam/', include('artcam.urls')),
-	(r'^$', include('front.urls')),
+	(r'^', include('front.urls')),
 )

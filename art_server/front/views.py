@@ -29,3 +29,19 @@ from models import *
 
 def index(request):
 	return render_to_response('front/index.html', { }, context_instance=RequestContext(request))
+
+def status(request):
+	if request.method == 'POST' and request.POST.get('register', None):
+		host = '%s:%s' % (request.META.get('REMOTE_ADDR', '127.0.0.1'), int(request.POST['register']))
+		if StatusListener.objects.filter(host=host).count() == 0:
+			sl = StatusListener(host=host)
+			sl.save()
+	elif request.method == 'POST' and request.POST.get('unregister', None):
+		host = '%s:%s' % (request.META.get('REMOTE_ADDR', '127.0.0.1'), int(request.POST['unregister']))
+		try:
+			sl = StatusListener.objects.get(host=host)
+			sl.delete()
+		except StatusListener.DoesNotExist:
+			logging.debug('Tried to unregister an unknown host: %s' % host)
+		
+	return render_to_response('front/status.html', { }, context_instance=RequestContext(request))

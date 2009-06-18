@@ -6,5 +6,6 @@ from models import *
 
 urlpatterns = patterns('',
 #	(r'^group/(?P<id>[\d]+)$', 'front.views.artist_group_detail'),
+	(r'^status/$', 'front.views.status'),
 	(r'^$', 'front.views.index'),
 )
