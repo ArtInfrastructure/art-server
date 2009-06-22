@@ -2,11 +2,39 @@
 
 {% block sub-title %}Status | {% endblock %}
 
+{% block sub-head %}
+<script type="text/javascript">
+
+function initialize(){
+	setTimeout("hideErrorMessage();", 4000);
+}
+$(document).ready(function() { initialize(); });
+
+function hideErrorMessage(){
+	$("#page-message").hide("slide", { direction: "down" }, 1000);
+}
+
+</script>
+{% endblock %}
+
 {% block style %}
+#page-message { padding: 10px; border: solid 2px #DDD; color: #282; }
 {% endblock %}
 
 {% block content%}
 <h1>Status:</h1>
+
+{% if page_message %}
+	<p id="page-message">{{ page_message }}</p>
+{% endif %}
+
+{% if request.user.is_staff %}
+<h2>Manually Notify Art Systems:</h2>
+<form action="." method="post">
+	{% for field in status_form %}{{ field }}{% endfor %}
+	<input type="submit" value="send notifications" />
+</form>
+{% endif %}
 
 {% endblock %}
 

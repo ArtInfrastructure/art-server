@@ -46,11 +46,15 @@ class StatusListener(models.Model):
 		"""Send the status to this status listener"""
 		params = urllib.urlencode({'status':status})
 		headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-		conn = httplib.HTTPConnection(self.host)
-		conn.request("POST", "/status/", params, headers)
-		response = conn.getresponse()
-		print response.status, response.reason, response.read()
-		conn.close()	
+		try:
+			conn = httplib.HTTPConnection(self.host)
+			conn.request("POST", "/status/", params, headers)
+			response = conn.getresponse()
+			response.read()
+			conn.close()	
+			return True
+		except:
+			return False
 	class Meta:
 		ordering = ['-created']
 	def __unicode__(self):

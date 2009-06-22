@@ -15,10 +15,14 @@ import time
 import logging
 import urlparse
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import urllib
+
+# The IP and port of the art server in the form 'host:port'.
+ART_SERVER_HOST = '127.0.0.1:8000'
 
 # The port on which the status listener will sit
 # Change this if you receive a error like 'Address already in use'
-WEB_PORT = 8088 
+WEB_PORT = 8090
 
 def handle_status(status):
 	"""Put your status handling implementation here.
@@ -26,10 +30,10 @@ def handle_status(status):
 	"""
 	if status == 'normal':
 		print 'Status is normal'
-		# os.system('/path/to/script/reactToNormalStatus.sh')
+		# os.system('/full/path/to/script/reactToNormalStatus.sh')
 	elif status == 'emergency':
 		print 'Status is emergency'
-		# os.system('/path/to/script/reactToEmergencyStatus.sh')
+		# os.system('/full/path/to/script/reactToEmergencyStatus.sh')
 	else:
 		print 'Unknown status'
 
@@ -66,13 +70,35 @@ class StatusWebHandler(BaseHTTPRequestHandler):
 			logging.exception("Error in POST")
 			pass
 
+def register_listener():
+	try:
+		params = urllib.urlencode({ 'register':WEB_PORT })
+		f = urllib.urlopen("http://%s/status/" % ART_SERVER_HOST, params)
+		f.read()
+		return True
+	except:
+		return False
+
+def unregister_listener():
+	try:
+		params = urllib.urlencode({ 'unregister':WEB_PORT })
+		f = urllib.urlopen("http://%s/status/" % ART_SERVER_HOST, params)
+		f.read()
+		return True
+	except:
+		return False
+
 def main():
 	try:
 		server = HTTPServer(('', WEB_PORT), StatusWebHandler)
+		if not register_listener():
+			print 'Could not register with %s' % ART_SERVER_HOST
+			return
 		print 'started status listener...'
 		server.serve_forever()
 	except KeyboardInterrupt:
-		print '^C received, shutting down status listener'
+		print ' Shutting down status listener'
+		if not unregister_listener(): print 'Could not unregister with %s' % ART_SERVER_HOST
 		server.socket.close()
 
 if __name__ == '__main__':
