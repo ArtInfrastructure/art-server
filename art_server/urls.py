@@ -6,12 +6,14 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-	# (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-	(r'^admin/(.*)', admin.site.root),
+	(r'^admin/', include(admin.site.urls)),
 	(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'login.html'}),
 	(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login'),
 	(r'^accounts/profile/$', 'django.views.generic.simple.redirect_to', {'url': '/'}),
 	(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+
+	(r'^api/aodb/$', 'airport.views.snapshot_list'),
+	(r'^api/aodb/(?P<id>[\d]+)/$', 'airport.views.snapshot'),
 
 	(r'^bacnet/', include('bacnet.urls')),
 	(r'^artcam/', include('artcam.urls')),

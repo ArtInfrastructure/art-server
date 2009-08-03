@@ -22,3 +22,8 @@ class MockBACnetHandler(BACnetHandler):
 class BACPipesHandler(BACnetHandler):
 	def __init__(self, timeout=None):
 		raise Exception # this is not implemented
+	
+def main():
+	
+		
+if __name__ == "__main__": main()

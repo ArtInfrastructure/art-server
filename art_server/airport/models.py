@@ -26,34 +26,15 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_unicode
 from django.db.models import Q
 
-NORMAL_STATUS = 'normal'
-EMERGENCY_STATUS = 'emergency'
 
-class StatusListenerManager(models.Manager):
-	def broadcast_status(self, status):
-		"""Send the status to all registered status listeners."""
-		for listener in self.all(): listener.send_status(status)
-
-class StatusListener(models.Model):
-	"""A remote httpd which is requests status messages.  Set and deleted upon request from remote listener."""
-	host = models.CharField(max_length=1024, null=False, blank=False, unique=True)
+class AirportSnapshot(models.Model):
+	"""An XML formatted snapshot of data from the airport."""
+	xml_data = models.TextField(null=False, blank=False)
 	created = models.DateTimeField(auto_now_add=True)
-	objects = StatusListenerManager()
-	
-	def send_status(self, status):
-		"""Send the status to this status listener"""
-		params = urllib.urlencode({'status':status})
-		headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-		try:
-			conn = httplib.HTTPConnection(self.host)
-			conn.request("POST", "/status/", params, headers)
-			response = conn.getresponse()
-			response.read()
-			conn.close()	
-			return True
-		except:
-			return False
+
+	def __unicode__(self): return 'Snapshot %s' % self.created
+	@models.permalink
+	def get_absolute_url(self):
+		return ('airport.views.snapshot', (), { 'id':self.id })
 	class Meta:
 		ordering = ['-created']
-	def __unicode__(self):
-		return self.host

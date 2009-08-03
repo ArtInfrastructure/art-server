@@ -56,6 +56,7 @@ INSTALLED_APPS = (
 	'south',
 	'piston',
 	'art_server.bacnet',
+	'art_server.airport',
 	'art_server.artcam',
 	'art_server.front',
 )
