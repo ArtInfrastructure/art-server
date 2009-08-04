@@ -36,6 +36,9 @@ class Snapshot:
 	class HydrationMeta:
 		attributes = ['timestamp', 'url']
 
+def explorer(request):
+	return render_to_response('airport/explorer.html', { }, context_instance=RequestContext(request))
+
 def snapshot_list(request):
 	"""A list of all available snapshots"""
 	if request.method == "POST":
@@ -45,16 +48,24 @@ def snapshot_list(request):
 	working_list = [Snapshot(snapshot) for snapshot in AirportSnapshot.objects.all()]
 	return HttpResponse(dehydrate_to_list_xml(working_list, list_name='snapshotlist'))
 
+def latest_snapshot(request):
+	snap = AirportSnapshot.objects.latest()
+	if snap == None: raise Http404
+	return snapshot(request, snap.id)
+	
 def snapshot(request, id):
 	"""The XML data from an individual snapshot"""
 	snapshot = get_object_or_404(AirportSnapshot, pk=id)
 	xpath = request.GET.get('xpath', None)
-	if xpath == None: return HttpResponse(snapshot.xml_data, content_type="text/xml")
+
+	if xpath == None:
+		return HttpResponse(snapshot.xml_data, content_type="text/xml")
+
 	element = etree.fromstring(snapshot.xml_data)
 	result_elements = element.xpath(xpath)
 	root = etree.Element('snapshot')
 	for result_element in result_elements:
 		root.append(result_element)
-	return HttpResponse(etree.tostring(root), content_type="text/xml")
+	return HttpResponse(etree.tostring(root, pretty_print=True), content_type="text/xml")
 
 

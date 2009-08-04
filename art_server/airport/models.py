@@ -26,11 +26,18 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_unicode
 from django.db.models import Q
 
+class AirportSnapshotManager(models.Manager):
+	def latest(self):
+		snaps = self.all()[:1]
+		if len(snaps) == 1: return snaps[0]
+		return None
 
 class AirportSnapshot(models.Model):
 	"""An XML formatted snapshot of data from the airport."""
 	xml_data = models.TextField(null=False, blank=False)
 	created = models.DateTimeField(auto_now_add=True)
+
+	objects = AirportSnapshotManager()
 
 	def __unicode__(self): return 'Snapshot %s' % self.created
 	@models.permalink

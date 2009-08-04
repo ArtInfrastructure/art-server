@@ -13,7 +13,9 @@ urlpatterns = patterns('',
 	(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 
 	(r'^api/aodb/$', 'airport.views.snapshot_list'),
+	(r'^api/aodb/latest\.xml$', 'airport.views.latest_snapshot'),
 	(r'^api/aodb/(?P<id>[\d]+)/$', 'airport.views.snapshot'),
+	(r'^airport/', include('airport.urls')),
 
 	(r'^bacnet/', include('bacnet.urls')),
 	(r'^artcam/', include('artcam.urls')),

@@ -59,14 +59,20 @@ class BasicViewsTest(TestCase):
 		self.failUnless(snapshot_list[0][1].endswith(snapshot.get_absolute_url()))
 
 		# create a snapshot via form
-		response = self.client.post('%s' % APP_PATH, { 'xml_data': '<funky_snapshot><sub_element>Ahoi</sub_element></funkysnapshot>' })
+		response = self.client.post('%s' % APP_PATH, { 'xml_data': '<spunky><sub_element>Ahoi</sub_element></spunky>' })
 		self.failUnlessEqual(response.status_code, 200, 'status was %s' % response.status_code )
 		self.failUnless(AirportSnapshot.objects.all().count() == 2)
 		snapshot_list = SnapshotList(response.content)
 		self.failUnless(len(snapshot_list) == 2)
 
-		# make certain that new lists have the form created snapshot
+		# make certain that new lists have the form-created snapshot
 		response = self.client.get('%s' % APP_PATH)
 		self.failUnlessEqual(response.status_code, 200, 'status was %s' % response.status_code )
 		snapshot_list = SnapshotList(response.content)
 		self.failUnless(len(snapshot_list) == 2)
+
+		# make certain that the latest url returns the latest snapshot
+		response = self.client.get('%slatest.xml' % APP_PATH)
+		self.failUnlessEqual(response.status_code, 200, 'status was %s' % response.status_code )
+		element = etree.fromstring(response.content)
+		self.failUnlessEqual(element.tag, 'spunky')
