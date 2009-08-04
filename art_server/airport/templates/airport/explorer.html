@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block sub-title %}Airport Data Explorer | {% endblock %}
+
+{% block style %}
+#controls { line-height: 3em; text-align: center; }
+#results { border: solid 1px #DDD; min-height: 400px; }
+{% endblock %}
+
+{% block sub-head %}
+<script type="text/javascript">
+
+var latestURL = "{% url airport.views.latest_snapshot %}"
+
+function pageInit(){
+	updateResults();
+}
+$(document).ready(function() { pageInit(); });
+
+function handleNewResults(xml){
+	$("#results").html('<pre>' + $('<div/>').text(xml).html() + '</pre>');
+}
+
+function updateResults(xpath){
+	console.log('xpath: ' + xpath);
+	var params = { };
+	if(xpath){ params['xpath'] =  xpath; }
+	$.get(latestURL, params, handleNewResults, 'text');
+}
+
+</script>
+{% endblock %}
+
+
+{% block content%}
+<h1>Airport Data Explorer:</h1>
+
+<div id="controls">
+	<form id="control-form" action="." method="get" onsubmit="updateResults($('#control-input').val()); return false;">
+		<label>Enter an XPath:</label><input type="text" id="control-input" name="control-input" /> <input type="submit" value="filter" />
+	</form>
+</div>
+
+<h3>Latest Snapshot:</h3>
+<div id="results">
+</div>
+
+{% endblock %}
+
+/* Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */
