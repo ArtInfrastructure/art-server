@@ -6,6 +6,8 @@ from django.core import mail
 from airport.models import *
 from airport.airport_client import SnapshotList
 
+from lxml import etree
+
 APP_PATH = '/api/aodb/'
 
 class BasicViewsTest(TestCase):
@@ -28,7 +30,12 @@ class BasicViewsTest(TestCase):
 
 		# manually create a snapshot
 		snapshot = AirportSnapshot()
-		snapshot.xml_data = '<funky_snapshot><sub_element>Hey</sub_element></funkysnapshot>'
+		snapshot.xml_data = """<funky_snapshot>
+				<sub_element>Hey</sub_element>
+				<sub_element foo="bar">
+					<sub_sub_element />
+				</sub_element>
+			</funky_snapshot>"""
 		snapshot.save()
 		self.failUnless(AirportSnapshot.objects.all().count() == 1)
 
@@ -36,6 +43,13 @@ class BasicViewsTest(TestCase):
 		response = self.client.get('%s%s/' % (APP_PATH, snapshot.id))
 		self.failUnlessEqual(response.status_code, 200, 'status was %s' % response.status_code )
 		self.failUnlessEqual(response.content, snapshot.xml_data)
+
+		# check that we can fetch an element via XPath
+		response = self.client.get('%s%s/?xpath=//sub_element[@foo=%%22bar%%22]' % (APP_PATH, snapshot.id))
+		self.failUnlessEqual(response.status_code, 200, 'status was %s' % response.status_code )
+		element = etree.fromstring(response.content)
+		self.failUnlessEqual(len(element), 1)
+		self.failUnlessEqual(element[0].get('foo'), 'bar')
 
 		# make certain that we get a list with one element
 		response = self.client.get('%s' % APP_PATH)

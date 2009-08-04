@@ -22,6 +22,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.template.loader import render_to_string
 
+from lxml import etree
+
 from art_server.hydration import dehydrate_to_list_xml
 from models import *
 from forms import *
@@ -46,4 +48,13 @@ def snapshot_list(request):
 def snapshot(request, id):
 	"""The XML data from an individual snapshot"""
 	snapshot = get_object_or_404(AirportSnapshot, pk=id)
-	return HttpResponse(snapshot.xml_data, content_type="text/xml")
+	xpath = request.GET.get('xpath', None)
+	if xpath == None: return HttpResponse(snapshot.xml_data, content_type="text/xml")
+	element = etree.fromstring(snapshot.xml_data)
+	result_elements = element.xpath(xpath)
+	root = etree.Element('snapshot')
+	for result_element in result_elements:
+		root.append(result_element)
+	return HttpResponse(etree.tostring(root), content_type="text/xml")
+
+
