@@ -17,6 +17,7 @@ urlpatterns = patterns('',
 	(r'^api/aodb/(?P<id>[\d]+)/$', 'airport.views.snapshot'),
 	(r'^airport/', include('airport.urls')),
 
+	(r'^status/', include('flock.urls')),
 	(r'^bacnet/', include('bacnet.urls')),
 	(r'^artcam/', include('artcam.urls')),
 	(r'^', include('front.urls')),

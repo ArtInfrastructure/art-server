@@ -17,6 +17,10 @@ import urlparse
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import urllib
 
+# The list of test names to which your piece will reply
+# They must not have a comma in them
+TEST_NAMES = ['test1', 'test2', 'test3']
+
 # The IP and port of the art server in the form 'host:port'.
 ART_SERVER_HOST = '127.0.0.1:8000'
 
@@ -27,6 +31,7 @@ WEB_PORT = 8090
 def handle_status(status):
 	"""Put your status handling implementation here.
 	The possible values for the status parameter are: normal, emergency
+	If you have defined TEST_NAMES above, you may also receive those as status values
 	"""
 	if status == 'normal':
 		print 'Status is normal'
@@ -34,10 +39,12 @@ def handle_status(status):
 	elif status == 'emergency':
 		print 'Status is emergency'
 		# os.system('/full/path/to/script/reactToEmergencyStatus.sh')
+	# this is where you'd add hooks for test names
 	else:
-		print 'Unknown status'
+		print 'Unknown status %s' % status
 
 STATUS_PARAMETER_NAME = 'status'
+TEST_PARAMETER_NAME = 'test'
 
 class StatusWebHandler(BaseHTTPRequestHandler):
 	"""The http handler which reads the status parameter and hands it to the handle_status function."""
@@ -46,7 +53,7 @@ class StatusWebHandler(BaseHTTPRequestHandler):
 			self.send_response(200)
 			self.send_header('Content-type', 'text/html')
 			self.end_headers()
-			self.wfile.write('This is an art cloud status handler.')
+			self.wfile.write('This is the art status listener')
 		except IOError:
 			self.send_error(404,'File Not Found: %s' % self.path)
 
@@ -72,7 +79,7 @@ class StatusWebHandler(BaseHTTPRequestHandler):
 
 def register_listener():
 	try:
-		params = urllib.urlencode({ 'register':WEB_PORT })
+		params = urllib.urlencode({ 'register':WEB_PORT, 'tests':','.join(TEST_NAMES) })
 		f = urllib.urlopen("http://%s/status/" % ART_SERVER_HOST, params)
 		f.read()
 		return True

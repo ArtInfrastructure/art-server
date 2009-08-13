@@ -34,6 +34,15 @@ function hideErrorMessage(){
 	{% for field in status_form %}{{ field }}{% endfor %}
 	<input type="submit" value="send notifications" />
 </form>
+
+<h2>Registered Listeners:</h2>
+<ul>
+	{% for status_listener in status_listeners %}
+	<li><a href="{% url flock.views.status_listener status_listener.host %}">{{ status_listener }}</a></li>
+	{% empty %}
+	<li>No registered listeners</li>
+	{% endfor %}
+</ul>
 {% endif %}
 
 {% endblock %}

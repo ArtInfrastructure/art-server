@@ -58,6 +58,7 @@ INSTALLED_APPS = (
 	'art_server.bacnet',
 	'art_server.airport',
 	'art_server.artcam',
+	'art_server.flock',
 	'art_server.front',
 )
 
