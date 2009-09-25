@@ -38,5 +38,5 @@ class BasicViewsTest(TestCase):
 		self.failUnless(StatusListener.objects.all().count() == 1)
 		sl = StatusListener.objects.all()[0]
 		self.failUnlessEqual(len(sl.tests.all()), 3)
-		
+		self.failUnless('test2' in [test.name for test in sl.tests.all()])
 

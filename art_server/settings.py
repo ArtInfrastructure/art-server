@@ -5,6 +5,9 @@ import os
 PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
 MEDIA_ROOT = PROJECT_ROOT + '/media/'
 TEMPLATE_DIRS = ( PROJECT_ROOT + '/templates/', )
+BACKUP_ROOT = PROJECT_ROOT + '/backups/'
+
+DYNAMIC_MEDIA_DIRS = ['artcam_photo', 'resized_image']
 
 SOUTH_AUTO_FREEZE_APP = True
 
@@ -59,6 +62,7 @@ INSTALLED_APPS = (
 	'art_server.airport',
 	'art_server.artcam',
 	'art_server.flock',
+	'art_server.incus',
 	'art_server.front',
 )
 
