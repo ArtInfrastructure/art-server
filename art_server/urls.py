@@ -18,6 +18,7 @@ urlpatterns = patterns('',
 	(r'^airport/', include('airport.urls')),
 
 	(r'^status/', include('flock.urls')),
+	(r'^incus/', include('incus.urls')),
 	(r'^bacnet/', include('bacnet.urls')),
 	(r'^artcam/', include('artcam.urls')),
 	(r'^', include('front.urls')),

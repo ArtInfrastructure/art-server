@@ -23,5 +23,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.template.loader import render_to_string
 
 from models import *
-from forms import *
 
+def index(request):
+	return render_to_response('incus/index.html', { "channel_groups":ABChannelGroup.objects.all() }, context_instance=RequestContext(request))

@@ -6,5 +6,5 @@ from models import *
 
 urlpatterns = patterns('',
 	#(r'^(?P<id>[\d]+)/$', 'artcam.views.artcam'),
-	#(r'^$', 'artcam.views.index'),
+	(r'^$', 'incus.views.index'),
 )
