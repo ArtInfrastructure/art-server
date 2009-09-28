@@ -35,6 +35,8 @@ class ABDevice(models.Model):
 		verbose_name = 'AudioBox device'
 		verbose_name_plural = 'AudioBox devices'
 	def __unicode__(self): return self.name
+	@models.permalink
+	def get_absolute_url(self): return ('incus.views.device', (), { 'id':self.id })
 
 class ABChannel(models.Model):
 	"""An audio channel on the AudioBox device."""
@@ -44,7 +46,7 @@ class ABChannel(models.Model):
 		verbose_name = 'channel'
 		verbose_name_plural = 'channels'
 	def __unicode__(self): return '%s - channel %s' % (self.audioBoxDevice.__unicode__(), self.number)
-	
+
 class ABChannelGroup(models.Model):
 	"""A set of channels whose gain can be controlled as a group, each with relative gain changes."""
 	name = models.CharField(max_length=1024, null=False, blank=False)
@@ -53,6 +55,8 @@ class ABChannelGroup(models.Model):
 		verbose_name = 'channel group'
 		verbose_name_plural = 'channel groups'
 	def __unicode__(self): return self.name
+	@models.permalink
+	def get_absolute_url(self): return ('incus.views.channel_group', (), { 'id':self.id })
 
 class ChannelGroupMembership(models.Model):
 	"""Membership record for channels in the channel group, as well as their relative gains"""

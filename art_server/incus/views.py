@@ -25,4 +25,12 @@ from django.template.loader import render_to_string
 from models import *
 
 def index(request):
-	return render_to_response('incus/index.html', { "channel_groups":ABChannelGroup.objects.all() }, context_instance=RequestContext(request))
+	return render_to_response('incus/index.html', { "channel_groups":ABChannelGroup.objects.all(), "devices":ABDevice.objects.all() }, context_instance=RequestContext(request))
+
+def device(request, id):
+	device = get_object_or_404(ABDevice, pk=id)
+	return render_to_response('incus/device.html', { "device":device }, context_instance=RequestContext(request))
+
+def channel_group(request, id):
+	channel_group = get_object_or_404(ABChannelGroup, pk=id)
+	return render_to_response('incus/channel_group.html', { "channel_group":channel_group }, context_instance=RequestContext(request))

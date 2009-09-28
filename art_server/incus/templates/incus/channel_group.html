@@ -1,29 +1,16 @@
 {% extends "base.html" %}
 
-{% block sub-title %}Incus Front Page | {% endblock %}
+{% block sub-title %}Channel Group | {% endblock %}
 
 {% block style %}
-.channelGroupList li { margin: 10px 0px; }
 {% endblock %}
 
 {% block content%}
-<h1>Incus Audio Manager:</h1>
+<h1>{{ channel_group.name|safe }}:</h1>
 
-<h2>AudioBoxes:</h2>
-<ul class="ab-device-list">
-{% for device in devices %}
-	<li><a href="{{ device.get_absolute_url }}">{{ device.name|safe }}</a></li>
+{% for channel in channel_group.ordered_channels %}
+	{{ channel.number }}
 {% endfor %}
-</ul>
-
-<h2>Channel Groups:</h2>
-<ul class="channel-group-list">
-{% for channel_group in channel_groups %}
-<li>
-	<div class="channel-group-name"><a href="{{ channel_group.get_absolute_url }}">{{ channel_group.name|safe }}</a></div>
-</li>
-{% endfor %}
-</ul>
 
 {% endblock %}
 
