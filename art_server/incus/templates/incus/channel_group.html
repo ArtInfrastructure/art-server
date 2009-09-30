@@ -2,15 +2,86 @@
 
 {% block sub-title %}Channel Group | {% endblock %}
 
+{% block sub-head %}
+<script type="text/javascript">
+var sliderHeight = 150;
+
+// set up the master output slider
+$(function() {
+	$("#master-output-slider").slider({
+		orientation: "vertical",
+		range: "min",
+		min: 0,
+		max: 100,
+		value: 60,
+		slide: function(event, ui) { $("#master-output-amount").html(ui.value); }
+	});
+	$("#master-output-slider").height(sliderHeight);
+	$("#master-output-amount").html($("#master-output-slider").slider("value"));
+});
+
+// set up the channel sliders
+$(function() {
+{% for channel in channel_group.ordered_channels %}
+	$("#channel-slider-{{channel.id}}").slider({
+		orientation: "vertical",
+		range: "min",
+		min: 0,
+		max: 100,
+		value: 60,
+		slide: function(event, ui) { $("#channel-amount-{{channel.id}}").html(ui.value); }
+	});
+	$("#channel-slider-{{channel.id}}").height(sliderHeight);
+	$("#channel-amount-{{channel.id}}").html($("#channel-slider-{{channel.id}}").slider("value"));
+{% endfor %}
+});
+
+
+
+</script>
+{% endblock %}
+
 {% block style %}
+#left-column { width: 300px; float: left; }
+#master-output-div, .channel-div { text-align: center; }
+.channel-div { display: inline; float: left; }
+.channel-slider { margin: 10px 10px; }
+#master-output-slider { margin: 10px 60px; }
+#master-output-div { width: 130px; }
+.channel-amount { }
+#settings-form { margin: 10px 0 10px 10px; }
+#settings-form label { display: block; margin-bottom: 10px; }
 {% endblock %}
 
 {% block content%}
 <h1>{{ channel_group.name|safe }}:</h1>
 
-{% for channel in channel_group.ordered_channels %}
-	{{ channel.number }}
-{% endfor %}
+<div id="left-column">
+	<div id="master-output-div">
+		<label for="master-output-amount">Master Output Gain:</label>
+		<div class="channel-slider" id="master-output-slider"></div>
+		<span class="channel-amount" id="master-output-amount"></span>
+	</div>
+
+	<form id="settings-form" action="." method="post">
+		<label>Settings memory:</label>
+		<input type="submit" value="Save" />
+		<input type="submit" value="Restore" />
+	</form>
+	
+</div>
+
+<div id="right-column">
+	<div style="margin: 10px 0px;">Channel gains:</div>
+	{% for channel in channel_group.ordered_channels %}
+		<div class="channel-div" id="channel-{{channel.id}}">
+			<label for="channel-amount-{{channel.id}}">{{ channel.number }}</label>
+			<div class="channel-slider" id="channel-slider-{{channel.id}}"></div>
+			<span class="channel-amount" id="channel-amount-{{channel.id}}"></span>
+		</div>
+	{% endfor %}
+</div>
+
 
 {% endblock %}
 

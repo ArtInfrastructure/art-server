@@ -31,6 +31,8 @@ class ABDevice(models.Model):
 	name = models.CharField(max_length=1024, null=False, blank=False)
 	ip = models.IPAddressField(blank=False, null=False)
 	port = models.IntegerField(blank=False, null=False, default=55128)
+	def channel_groups(self):
+		return ABChannelGroup.objects.filter(audio_channels__audioBoxDevice=self).distinct()
 	class Meta:
 		verbose_name = 'AudioBox device'
 		verbose_name_plural = 'AudioBox devices'
@@ -51,6 +53,8 @@ class ABChannelGroup(models.Model):
 	"""A set of channels whose gain can be controlled as a group, each with relative gain changes."""
 	name = models.CharField(max_length=1024, null=False, blank=False)
 	audio_channels = models.ManyToManyField(ABChannel, blank=True, null=True, through='ChannelGroupMembership')
+	def ordered_channels(self):
+		return self.audio_channels.all().order_by('number')
 	class Meta:
 		verbose_name = 'channel group'
 		verbose_name_plural = 'channel groups'
