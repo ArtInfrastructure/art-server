@@ -18,10 +18,7 @@ class ABChannelAdmin(StyledModelAdmin):
 	pass
 admin.site.register(ABChannel, ABChannelAdmin)
 
-class ChannelGroupChannelInline(admin.TabularInline):
-	model = ChannelGroupMembership
-	extra = 6
 
 class ABChannelGroupAdmin(StyledModelAdmin):
-	inlines = [ChannelGroupChannelInline]
+	pass
 admin.site.register(ABChannelGroup, ABChannelGroupAdmin)

@@ -33,4 +33,5 @@ def device(request, id):
 
 def channel_group(request, id):
 	channel_group = get_object_or_404(ABChannelGroup, pk=id)
+	print dir(channel_group)
 	return render_to_response('incus/channel_group.html', { "channel_group":channel_group }, context_instance=RequestContext(request))

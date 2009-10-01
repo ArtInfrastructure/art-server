@@ -40,21 +40,10 @@ class ABDevice(models.Model):
 	@models.permalink
 	def get_absolute_url(self): return ('incus.views.device', (), { 'id':self.id })
 
-class ABChannel(models.Model):
-	"""An audio channel on the AudioBox device."""
-	audioBoxDevice = models.ForeignKey(ABDevice, blank=False, null=False)
-	number = models.IntegerField(blank=False, null=False)
-	class Meta:
-		verbose_name = 'channel'
-		verbose_name_plural = 'channels'
-	def __unicode__(self): return '%s - channel %s' % (self.audioBoxDevice.__unicode__(), self.number)
-
 class ABChannelGroup(models.Model):
 	"""A set of channels whose gain can be controlled as a group, each with relative gain changes."""
 	name = models.CharField(max_length=1024, null=False, blank=False)
-	audio_channels = models.ManyToManyField(ABChannel, blank=True, null=True, through='ChannelGroupMembership')
-	def ordered_channels(self):
-		return self.audio_channels.all().order_by('number')
+	master_gain = models.FloatField(null=False, default=0)
 	class Meta:
 		verbose_name = 'channel group'
 		verbose_name_plural = 'channel groups'
@@ -62,16 +51,14 @@ class ABChannelGroup(models.Model):
 	@models.permalink
 	def get_absolute_url(self): return ('incus.views.channel_group', (), { 'id':self.id })
 
-class ChannelGroupMembership(models.Model):
-	"""Membership record for channels in the channel group, as well as their relative gains"""
-	channel = models.ForeignKey(ABChannel, blank=False, null=False)
-	channel_group = models.ForeignKey(ABChannelGroup, blank=False, null=False)
+class ABChannel(models.Model):
+	"""An audio channel on the AudioBox device."""
+	audioBoxDevice = models.ForeignKey(ABDevice, blank=False, null=False)
+	number = models.IntegerField(blank=False, null=False)
+	channel_group = models.ForeignKey(ABChannelGroup, blank=True, null=True, related_name="channels")
 	gain = models.FloatField(null=False, default=0)
 	class Meta:
-		verbose_name = 'member channel'
-		verbose_name_plural = 'member channels'
-		ordering = ['channel__number']
-	def __unicode__(self):
-		return '%s' % self.channel.number
-
-
+		verbose_name = 'channel'
+		verbose_name_plural = 'channels'
+		ordering = ['number']
+	def __unicode__(self): return '%s - channel %s' % (self.audioBoxDevice.__unicode__(), self.number)
