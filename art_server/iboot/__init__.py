@@ -1,0 +1,1 @@
+"""A django app which tracks and controls iBoot Network Attached Remote Power Controllers."""
