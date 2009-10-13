@@ -40,7 +40,8 @@ def artcam(request, id):
 		try:
 			artcam.update_photo()
 		except:
-			print "Could not update the artcam %s" % traceback.format_exc()
+			#print "Could not update the artcam %s" % traceback.format_exc()
+			return HttpResponseServerError('Could not update the artcam %s')
 	return render_to_response('artcam/artcam.html', { 'artcam':artcam }, context_instance=RequestContext(request))
 
 def artcam_photo(request, artcam_id, photo_id):

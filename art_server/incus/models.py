@@ -32,7 +32,7 @@ class ABDevice(models.Model):
 	ip = models.IPAddressField(blank=False, null=False)
 	port = models.IntegerField(blank=False, null=False, default=55128)
 	def channel_groups(self):
-		return ABChannelGroup.objects.filter(audio_channels__audioBoxDevice=self).distinct()
+		return ABChannelGroup.objects.filter(channels__audioBoxDevice=self).distinct()
 	class Meta:
 		verbose_name = 'AudioBox device'
 		verbose_name_plural = 'AudioBox devices'
