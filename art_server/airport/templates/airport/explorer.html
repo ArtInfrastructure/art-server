@@ -4,7 +4,12 @@
 
 {% block style %}
 #controls { line-height: 3em; text-align: center; }
-#results { border: solid 1px #DDD; min-height: 400px; }
+#results { border: solid 1px #DDD; min-height: 400px; width: 450px; padding-top: 10px; }
+#info-column { float: right; width: 340px;  }
+#info-column p { padding-top: 10px; border: solid 1px #DDD; }
+#xpath-examples {  border: solid 1px #DDD; margin-top: 0px; padding-top: 10px; }
+#xpath-examples li { list-style-type: none; margin-left: 5px; }
+#xpath-examples code, #info-column p code { display: block; margin: 10px 0px; }
 {% endblock %}
 
 {% block sub-head %}
@@ -39,6 +44,32 @@ function updateResults(xpath){
 	<form id="control-form" action="." method="get" onsubmit="updateResults($('#control-input').val()); return false;">
 		<label>Enter an XPath:</label><input type="text" id="control-input" name="control-input" /> <input type="submit" value="filter" />
 	</form>
+</div>
+
+<div id="info-column">
+	<h3>What's going on here?</h3>
+	<p>This page shows you the latest airport data snapshot.  This information is gathered from the airport's flight information database and presented in XML format for your use.  You can find information about the application programmatic interface (API) on the <a href="http://174.129.3.149/wiki/AirportDataAPI/">AirportDataAPI wiki page</a>.</p>
+	
+	<h3>Example XPaths:</h3>
+	<ul id="xpath-examples">
+		<li>
+			Select all flights from Southwest Airlines (carrier "WN"):
+			<code class="xpath-example">//FlightLeg[.//Carrier='WN']</code>
+		</li>
+		<li>
+			Select flight 3479 from Southwest Airlines:
+			<code class="xpath-example">//FlightLeg[.//Carrier='WN' and .//FlightNumber=3479]</code>
+		</li>
+		<li>
+			Select all flights through Albuquerque:
+			<code class="xpath-example">//FlightLeg[.//Airport="ABQ"]</code>
+		</li>
+	</ul>
+	
+	<h3>Note:</h3>
+	<p>You will need to URL encode your XPath parameters.<br/>
+		For example:<br />
+		<code class="xpath-example">//FlightLeg[.//Carrier='WN' and .//FlightNumber=3479]</code> turns into <code class="xpath-example">//FlightLeg[.//Carrier='WN'%20and%20.//FlightNumber=3479]</code>
 </div>
 
 <h3>Latest Snapshot:</h3>
