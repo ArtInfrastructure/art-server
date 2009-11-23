@@ -15,13 +15,7 @@ class ArtcamTask(Task):
 		site = Site.objects.get_current()
 		for artcam in Artcam.objects.all():
 			try:
-				conn = httplib.HTTPConnection(site.domain)
-				conn.request("GET", artcam.get_update_url())
-				response = conn.getresponse()
-				if response.status != 200:
-					logging.debug("Could not update %s: %s %s", artcam, response.status, response.reason)
-				response.read()
-				conn.close()
+				artcam.update_photo()
 			except:
 				logging.debug("Could not update %s: %s %s", artcam, sys.exc_info()[0], sys.exc_info()[1])
 
