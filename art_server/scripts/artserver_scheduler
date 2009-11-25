@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+# artserver_scheduler
+#
+# chkconfig: - 60 50
+# description: The art server scheduler does things like periodically poll the artcams and update the aodb snapshots
+# processname: scripts/scheduler.py
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+RETVAL=0
+prog="scheduler.py"
+
+ART_SERVER_SRC_DIR="/var/www/Art-Server/art_server"
+SCHEDULER_SCRIPT_PATH="$ART_SERVER_SRC_DIR/scripts/scheduler.py"
+
+start() {
+	export PYTHONPATH=.
+	cd $ART_SERVER_SRC_DIR
+        daemon $SCHEDULER_SCRIPT_PATH &
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+        echo
+        return $RETVAL
+}
+
+stop() {
+        echo -n $"Shutting down $prog: "
+        killproc $prog
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
+        return $RETVAL
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|reload)
+        stop
+        start
+        RETVAL=$?
+        ;;
+  condrestart)
+        if [ -f /var/lock/subsys/$prog ]; then
+            stop
+            start
+            RETVAL=$?
+        fi
+        ;;
+  status)
+        status $prog
+        RETVAL=$?
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+        exit 2
+esac
+
+exit $RETVAL
