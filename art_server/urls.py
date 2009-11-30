@@ -12,6 +12,11 @@ urlpatterns = patterns('',
 	(r'^accounts/profile/$', 'django.views.generic.simple.redirect_to', {'url': '/'}),
 	(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 
+	(r'^api/artcam/$', 'artcam.api_views.artcams'),
+	(r'^api/artcam/(?P<id>[\d]+)/$', 'artcam.api_views.artcam'),
+	(r'^api/artcam/(?P<artcam_id>[\d]+)/photo/$', 'artcam.api_views.photos'),
+	(r'^api/artcam/(?P<artcam_id>[\d]+)/photo/(?P<photo_id>[\d]+)/$', 'artcam.api_views.photo'),
+
 	(r'^api/aodb/$', 'airport.views.snapshot_list'),
 	(r'^api/aodb/latest\.xml$', 'airport.views.latest_snapshot'),
 	(r'^api/aodb/(?P<id>[\d]+)/$', 'airport.views.snapshot'),

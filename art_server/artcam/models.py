@@ -63,7 +63,7 @@ class Artcam(models.Model):
 	class Meta:
 		ordering = ['name']
 	class HydrationMeta:
-		attributes = ('name', 'domain')
+		attributes = ('id', 'name', 'ip', 'port')
 
 class ThumbnailedModel(models.Model):
 	"""An abstract base class for models with an ImageField named "image" """
