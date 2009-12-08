@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block sub-title %}Lighting | {% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content%}
+<h1>Lighting:</h1>
+
+<h2>Lights:</h2>
+<ul>
+{% for light in bacnet_lights %}
+	<li><a href="{% url lighting.views.bacnet_light light.id %}">{{ light.name }}</a></li>
+{% endfor %}
+</ul>
+
+<h2>Projectors:</h2>
+<ul>
+{% for projector in projectors %}
+	<li><a href="{% url lighting.views.projector projector.id %}">{{ projector.name }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+
+/* Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */

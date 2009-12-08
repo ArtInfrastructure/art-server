@@ -24,8 +24,8 @@ urlpatterns = patterns('',
 
 	(r'^status/', include('flock.urls')),
 	(r'^incus/', include('incus.urls')),
-	(r'^bacnet/', include('bacnet.urls')),
 	(r'^iboot/', include('iboot.urls')),
 	(r'^artcam/', include('artcam.urls')),
+	(r'^lighting/', include('lighting.urls')),
 	(r'^', include('front.urls')),
 )

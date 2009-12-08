@@ -26,5 +26,16 @@ from django.utils import feedgenerator
 
 from models import *
 
+@staff_member_required
 def index(request):
-	return render_to_response('bacnet/index.html', { }, context_instance=RequestContext(request))
+	return render_to_response('lighting/index.html', { 'bacnet_lights':BACNetLight.objects.all(), 'projectors':Projector.objects.all() }, context_instance=RequestContext(request))
+
+@staff_member_required
+def bacnet_light(request, id):
+	light = get_object_or_404(BACNetLight, pk=id)
+	return render_to_response('lighting/bacnet_light.html', { 'light':light }, context_instance=RequestContext(request))
+
+@staff_member_required
+def projector(request, id):
+	projector = get_object_or_404(Projector, pk=id)
+	return render_to_response('lighting/projector.html', { 'projector':projector }, context_instance=RequestContext(request))
