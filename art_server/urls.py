@@ -17,6 +17,12 @@ urlpatterns = patterns('',
 	(r'^api/artcam/(?P<artcam_id>[\d]+)/photo/$', 'artcam.api_views.photos'),
 	(r'^api/artcam/(?P<artcam_id>[\d]+)/photo/(?P<photo_id>[\d]+)/$', 'artcam.api_views.photo'),
 
+	(r'^api/bnlight/$', 'lighting.api_views.bacnet_lights'),
+	(r'^api/bnlight/(?P<id>[\d]+)/$', 'lighting.api_views.bacnet_light'),
+	(r'^api/bnlight/(?P<id>[\d]+)/value/$', 'lighting.api_views.bacnet_light_value'),
+	(r'^api/projector/$', 'lighting.api_views.projectors'),
+	(r'^api/projector/(?P<id>[\d]+)/$', 'lighting.api_views.projector'),
+
 	(r'^api/aodb/$', 'airport.views.snapshot_list'),
 	(r'^api/aodb/latest\.xml$', 'airport.views.latest_snapshot'),
 	(r'^api/aodb/(?P<id>[\d]+)/$', 'airport.views.snapshot'),

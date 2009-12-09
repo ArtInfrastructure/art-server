@@ -42,7 +42,7 @@ class BACNetLight(models.Model):
 		verbose_name = "BACNet Light"
 		verbose_name_plural = "BACNet Lights"
 	class HydrationMeta:
-		attributes = ['id', 'name']
+		attributes = ['id', 'name', 'device_id', 'property_id']
 
 class Projector(models.Model):
 	"""A light projection system which is controlled via the net."""

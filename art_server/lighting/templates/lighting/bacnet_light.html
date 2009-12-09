@@ -9,8 +9,18 @@
 {% block content%}
 <h1><a href="{% url lighting.views.index %}">Lighting</a>: {{ light.name }}</h1>
 <table>
-	<tr><th>Something:</th><td>or other</td></tr>
+	<tr><th>Device ID:</th><td>{{ light.device_id }}</td></tr>
+	<tr><th>Property ID:</th><td>{{ light.property_id }}</td></tr>
 </table>
+
+
+<h2 style="margin-top: 50px;">Some rough stuff:</h2>
+<a href="{% url lighting.api_views.bacnet_light_value light.id %}">read value</a>
+
+<form action="{% url lighting.api_views.bacnet_light_value light.id %}" method="post">
+	<input type="input" value="100" name="value" />
+	<input type="submit" value="set value" />
+</form>
 
 {% endblock %}
 

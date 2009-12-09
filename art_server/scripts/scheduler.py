@@ -8,7 +8,6 @@ import threading
 import readline
 import cmd
 import logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', filename='/tmp/scheduler-art-server.txt', filemode = 'w')
 
 class Task(threading.Thread):
 	def __init__(self, action, loopdelay, initdelay):
@@ -80,6 +79,7 @@ if __name__ == '__main__':
 	from django.core.management import setup_environ
 	import settings
 	import logging
+	logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', filename='/tmp/scheduler-art-server.txt', filemode = 'w')
 
 	setup_environ(settings)
 
