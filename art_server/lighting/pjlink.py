@@ -7,9 +7,9 @@ import pprint, traceback
 
 class PJLinkProtocol:
 	"""Holds the constants for the PJLink protocol"""
-	# COMMAND LINE DATA CONSTANTS
+	# COMMAND LINE DATA
 	ON = "1"
-	OFF = "2"
+	OFF = "0"
 	QUERY = "?"
 	VIDEO_MUTE_ON = "11"
 	VIDEO_MUTE_OFF = "10"
@@ -17,6 +17,22 @@ class PJLinkProtocol:
 	AUDIO_MUTE_OFF = "20"
 	AUDIO_VIDEO_MUTE_ON = "31"
 	AUDIO_VIDEO_MUTE_OFF = "30"
+	
+	# INPUT
+	RGB_INPUT = "1"
+	VIDEO_INPUT = "2"
+	DIGITAL_INPUT = "3"
+	STORAGE_INPUT = "4"
+	NETWORK_INPUT = "5"
+	INPUT_1 = "1"
+	INPUT_2 = "2"
+	INPUT_3 = "3"
+	INPUT_4 = "4"
+	INPUT_5 = "5"
+	INPUT_6 = "6"
+	INPUT_7 = "7"
+	INPUT_8 = "8"
+	INPUT_9 = "9"
 	
 	# COMMANDS
 	POWER = "POWR"
@@ -30,7 +46,7 @@ class PJLinkProtocol:
 	OTHER_INFO = "INFO"
 	CLASS_INFO = "CLSS"
 
-	# RESPONSE CONSTANTS
+	# RESPONSE
 	OK = "OK"
 	ERROR_1 = "ERR1"
 	ERROR_2 = "ERR2"
@@ -42,6 +58,9 @@ class PJLinkProtocol:
 	WARM_UP_STATUS = "3"
 	UNAVAILABLE_STATUS = "ERR3"
 	PROJECTOR_FAILURE_STATUS = "ERR4"
+	ERROR_STATUS_OK = "0"
+	ERROR_STATUS_WARNING = "1"
+	ERROR_STATUS_ERROR = "2"
 	
 class PJLinkCommandLine:
 	"""Encoding and decoding methods for PJLink commands
@@ -109,15 +128,55 @@ class PJLinkController:
 		self.version = 1
 
 	def power_on(self):
-		response = self.send_command_line(PJLinkCommandLine(PJLinkProtocol.POWER, PJLinkProtocol.ON, self.version))
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.POWER, PJLinkProtocol.ON, self.version))
+		return response.data == PJLinkProtocol.OK
+
+	def power_off(self):
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.POWER, PJLinkProtocol.OFF, self.version))
+		return response.data == PJLinkProtocol.OK
 	
-	def send_command_line(self, command_line):
+	def query_power(self):
+		"""Return a power status constant from PJLinkProtocol or one of the Errors (directly from projector)"""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.POWER, PJLinkProtocol.QUERY, self.version))
+		return response.data
+
+	def set_input(self, input_type, input_number):
+		"""Set the projector type and input using PJLinkProtocol constants like PJLinkProtocol.RGB_INPUT and PJLinkProtocol.INPUT_3"""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.INPUT, '%s%s' % (input_type, input_number), self.version))
+		return response.data == PJLinkProtocol.OK
+
+	def query_input(self):
+		"""Return a tuple: <input type, input number> like (PJLinkProtocol.RGB_INPUT, PJLinkProtocol.INPUT_3)"""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.INPUT, PJLinkProtocol.QUERY, self.version))
+		if len(response.data) != 2: return (None, None)
+		return (response.data[0], response.data[1])
+
+	def query_mute(self):
+		"""Return a tuple of booleans: <audio is muted, video is muted>"""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.MUTE, PJLinkProtocol.QUERY, self.version))
+		if len(response.data) != 2: return (None, None)
+		audio_is_muted = response.data == PJLinkProtocol.AUDIO_MUTE_ON or response.data == PJLinkProtocol.AUDIO_VIDEO_MUTE_ON
+		video_is_muted = response.data == PJLinkProtocol.VIDEO_MUTE_ON or response.data == PJLinkProtocol.AUDIO_VIDEO_MUTE_ON
+		return (audio_is_muted, video_is_muted)
+
+	def set_mute(self, mute_state):
+		"""Set the audio and video playback to mute or... unmute?  Use the PJLinkProtocol constants as the mute_state."""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.MUTE, mute_state, self.version))
+		return response.data == PJLinkProtocol.OK
+
+	def query_error_status(self):
+		"""Return a set of error states: (fan status, lamp status, filter status, cover status, other status)"""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.ERROR_STATUS, PJLinkProtocol.QUERY, self.version))
+		if len(response.data) != 5: return (None, None, None, None, None)
+		return (response.data[0], response.data[1], response.data[2], response.data[3], response.data[4])
+
+	def _send_command_line(self, command_line):
 		print 'request:', command_line.encode()
-		encoded_response = self.raw_round_trip(command_line.encode())
+		encoded_response = self._raw_round_trip(command_line.encode())
 		print'response:', encoded_response
 		return PJLinkResponse.decode(encoded_response)
 
-	def raw_round_trip(self, data):
+	def _raw_round_trip(self, data):
 		try:
 			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			sock.settimeout(15)
