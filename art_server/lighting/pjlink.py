@@ -37,6 +37,7 @@ class PJLinkProtocol:
 	# COMMANDS
 	POWER = "POWR"
 	INPUT = "INPT"
+	AVAILABLE_INPUTS = "INST"
 	MUTE = "AVMT"
 	ERROR_STATUS = "ERST"
 	LAMP = "LAMP"
@@ -151,6 +152,11 @@ class PJLinkController:
 		if len(response.data) != 2: return (None, None)
 		return (response.data[0], response.data[1])
 
+	def query_available_inputs(self):
+		"""Return an array of tuples: [<input type, input number>] similar to the results of query_input"""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.AVAILABLE_INPUTS, PJLinkProtocol.QUERY, self.version))
+		return [[input_type[0], input_type[1]] for input_type in response.data.split(' ')]
+
 	def query_mute(self):
 		"""Return a tuple of booleans: <audio is muted, video is muted>"""
 		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.MUTE, PJLinkProtocol.QUERY, self.version))
@@ -169,6 +175,21 @@ class PJLinkController:
 		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.ERROR_STATUS, PJLinkProtocol.QUERY, self.version))
 		if len(response.data) != 5: return (None, None, None, None, None)
 		return (response.data[0], response.data[1], response.data[2], response.data[3], response.data[4])
+
+	def query_lamps(self):
+		"""Return an array of lamp lighting-hours and a boolean lamp-is-on value: [('100', True), ('142', False), (lighting-hours, is-on), ...]"""
+		response = self._send_command_line(PJLinkCommandLine(PJLinkProtocol.LAMP, PJLinkProtocol.QUERY, self.version))
+
+		results = [[int(lit_time)] for lit_time in response.data.split(' ')[::2]]
+		for index, lamp_id in enumerate(response.data.split(' ')[1::2]):
+			results[index].append(True if int(lamp_id) == 1 else False)
+		return results
+
+	def query_name(self): return self._send_command_line(PJLinkCommandLine(PJLinkProtocol.NAME, PJLinkProtocol.QUERY, self.version)).data
+	def query_manufacture_name(self): return self._send_command_line(PJLinkCommandLine(PJLinkProtocol.MANUFACTURE_NAME, PJLinkProtocol.QUERY, self.version)).data
+	def query_product_name(self): return self._send_command_line(PJLinkCommandLine(PJLinkProtocol.PRODUCT_NAME, PJLinkProtocol.QUERY, self.version)).data
+	def query_other_info(self): return self._send_command_line(PJLinkCommandLine(PJLinkProtocol.OTHER_INFO, PJLinkProtocol.QUERY, self.version)).data
+	def query_class_info(self): return self._send_command_line(PJLinkCommandLine(PJLinkProtocol.CLASS_INFO, PJLinkProtocol.QUERY, self.version)).data
 
 	def _send_command_line(self, command_line):
 		print 'request:', command_line.encode()

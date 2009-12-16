@@ -21,6 +21,7 @@ class MockPJLinkProjector(threading.Thread):
 		self.server = None
 		self.running = False
 
+		self.projector_name = "The Projector in the Blue Room"
 		self.manufacture_name = "2038 Problems, Inc."
 		self.product_name = "Big Bad Projector 1900"
 		self.other_info = "This Thing Rocks (tm)"
@@ -28,6 +29,7 @@ class MockPJLinkProjector(threading.Thread):
 
 		self.power_state = PJLinkProtocol.POWER_OFF_STATUS
 		self.input = [PJLinkProtocol.RGB_INPUT, PJLinkProtocol.INPUT_1]
+		self.available_inputs = [[PJLinkProtocol.RGB_INPUT, PJLinkProtocol.INPUT_1], [PJLinkProtocol.VIDEO_INPUT, PJLinkProtocol.INPUT_2]]
 		self.audio_mute = False
 		self.video_mute = False
 		
@@ -107,6 +109,13 @@ class MockPJLinkProjector(threading.Thread):
 					else:
 						response = PJLinkResponse(command_line.commands, PJLinkProtocol.ERROR_2)
 						
+				elif command_line.command == PJLinkProtocol.AVAILABLE_INPUTS:
+					if command_line.data == PJLinkProtocol.QUERY:
+						data = ' '.join(['%s%s' % (input[0], input[1]) for input in self.available_inputs])
+						response = PJLinkResponse(command_line.command, data)
+					else:
+						response = PJLinkResponse(command_line.commands, PJLinkProtocol.ERROR_2)
+						
 				elif command_line.command == PJLinkProtocol.MUTE:
 					if command_line.data == PJLinkProtocol.QUERY:
 						response = PJLinkResponse(command_line.command, self.mute_state)
@@ -116,12 +125,50 @@ class MockPJLinkProjector(threading.Thread):
 					else:
 						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
 
+				elif command_line.command == PJLinkProtocol.NAME:
+					if command_line.data == PJLinkProtocol.QUERY:
+						response = PJLinkResponse(command_line.command, self.projector_name)
+					else:
+						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+				elif command_line.command == PJLinkProtocol.MANUFACTURE_NAME:
+					if command_line.data == PJLinkProtocol.QUERY:
+						response = PJLinkResponse(command_line.command, self.manufacture_name)
+					else:
+						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+				elif command_line.command == PJLinkProtocol.PRODUCT_NAME:
+					if command_line.data == PJLinkProtocol.QUERY:
+						response = PJLinkResponse(command_line.command, self.product_name)
+					else:
+						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+				elif command_line.command == PJLinkProtocol.OTHER_INFO:
+					if command_line.data == PJLinkProtocol.QUERY:
+						response = PJLinkResponse(command_line.command, self.other_info)
+					else:
+						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+				elif command_line.command == PJLinkProtocol.CLASS_INFO:
+					if command_line.data == PJLinkProtocol.QUERY:
+						response = PJLinkResponse(command_line.command, self.class_info)
+					else:
+						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
 				elif command_line.command == PJLinkProtocol.ERROR_STATUS:
 					if command_line.data == PJLinkProtocol.QUERY:
 						data = ''.join([error[1] for error in self.errors])
 						response = PJLinkResponse(command_line.command, data)
 					else:
 						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+				elif command_line.command == PJLinkProtocol.LAMP:
+					if command_line.data == PJLinkProtocol.QUERY:
+						data = ' '.join(['%s %s' % (lamp[0], '1' if lamp[1] == True else '0') for lamp in self.lamps])
+						response = PJLinkResponse(command_line.command, data)
+					else:
+						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
 				else:
 					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_1)
 					
@@ -170,6 +217,14 @@ class PJLinkTest(TestCase):
 		self.failUnlessEqual(input_state, PJLinkProtocol.VIDEO_INPUT)
 		self.failUnlessEqual(input_number, PJLinkProtocol.INPUT_3)
 
+		# Available inputs
+		available_inputs = controller.query_available_inputs()
+		print available_inputs
+		self.failUnlessEqual(len(available_inputs), len(projector.available_inputs))
+		for index, available_input in enumerate(projector.available_inputs):
+			self.failUnlessEqual(available_inputs[index][0], projector.available_inputs[index][0])
+			self.failUnlessEqual(available_inputs[index][1], projector.available_inputs[index][1])
+
 		# Muting
 		audio_mute, video_mute = controller.query_mute()
 		self.failUnlessEqual(audio_mute, False)
@@ -210,6 +265,31 @@ class PJLinkTest(TestCase):
 		self.failUnlessEqual(filter_status, PJLinkProtocol.ERROR_STATUS_OK)
 		self.failUnlessEqual(cover_status, PJLinkProtocol.ERROR_STATUS_OK)
 		self.failUnlessEqual(other_status, PJLinkProtocol.ERROR_STATUS_ERROR)
+
+		# LAMPS
+		lamp_info = controller.query_lamps()
+		self.failUnlessEqual(len(lamp_info), len(projector.lamps))
+		for index, lamp in enumerate(projector.lamps):
+			self.failUnlessEqual(len(lamp_info[index]), 2)
+			self.failUnlessEqual(lamp_info[index][0], projector.lamps[index][0])
+			self.failUnlessEqual(lamp_info[index][1], projector.lamps[index][1])
+		controller.power_off()
+		lamp_info = controller.query_lamps()
+		for index, lamp in enumerate(projector.lamps):
+			self.failUnlessEqual(lamp_info[index][0], projector.lamps[index][0])
+			self.failUnlessEqual(lamp_info[index][1], projector.lamps[index][1])
+		projector.lamps = [[0, False]]
+		lamp_info = controller.query_lamps()
+		for index, lamp in enumerate(projector.lamps):
+			self.failUnlessEqual(lamp_info[index][0], projector.lamps[index][0])
+			self.failUnlessEqual(lamp_info[index][1], projector.lamps[index][1])
+		
+		# INFO
+		self.failUnlessEqual(controller.query_name(), projector.projector_name)
+		self.failUnlessEqual(controller.query_manufacture_name(), projector.manufacture_name)
+		self.failUnlessEqual(controller.query_product_name(), projector.product_name)
+		self.failUnlessEqual(controller.query_other_info(), projector.other_info)
+		self.failUnlessEqual(controller.query_class_info(), projector.class_info)
 		
 		projector.stop_server()
 		
