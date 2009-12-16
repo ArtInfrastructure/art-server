@@ -7,11 +7,9 @@ import threading
 import pprint
 
 from lighting.models import *
-from lighting.pjlink import PJLinkCommandLine, PJLinkResponse, PJLinkProtocol, PJLinkController
+from lighting.pjlink import PJLinkCommandLine, PJLinkResponse, PJLinkAuthenticationRequest, PJLinkAuthenticationException, PJLinkProtocol, PJLinkController
 
 APP_PATH = '/lighting/'
-
-# THIS ISN'T DONE.  PICK UP AT SECTION 4.8 of the PJLink spec: LAMP ?
 
 class MockPJLinkProjector(threading.Thread):
 	"""This creates a localhost server socket which speaks the PJLink protocol as if it were a projector"""
@@ -26,6 +24,8 @@ class MockPJLinkProjector(threading.Thread):
 		self.product_name = "Big Bad Projector 1900"
 		self.other_info = "This Thing Rocks (tm)"
 		self.class_info = "1"
+
+		self.password = 'squarePusher' # or None if the projector should use no auth
 
 		self.power_state = PJLinkProtocol.POWER_OFF_STATUS
 		self.input = [PJLinkProtocol.RGB_INPUT, PJLinkProtocol.INPUT_1]
@@ -82,98 +82,109 @@ class MockPJLinkProjector(threading.Thread):
 		self.server.bind(('127.0.0.1',0)) 
 		self.server.listen(self.backlog)
 		self.running = True
-		while self.running: 
-			client, address = self.server.accept() 
+		while self.running:
+			client, address = self.server.accept()
+			auth_request = PJLinkAuthenticationRequest(self.password)
+			client.send(auth_request.encode())
 			data = client.recv(self.buffer_size) 
-			if data:
-				response = None 
-				command_line = PJLinkCommandLine.decode(data)
+			if not data:
+				client.close()
+				continue
 
-				if command_line.command == PJLinkProtocol.POWER:
-					if command_line.data == PJLinkProtocol.ON or command_line.data == PJLinkProtocol.OFF:
-						self.power_state = command_line.data
-						for lamp in self.lamps: lamp[1] = command_line.data == PJLinkProtocol.ON
-						response = PJLinkResponse(PJLinkProtocol.POWER, PJLinkProtocol.OK)
-					elif command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(PJLinkProtocol.POWER, self.power_state)
-					else:
-						print 'Bad power paramter', command_line.data
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+			response = None 
+			command_line = PJLinkCommandLine.decode(data)
 
-				elif command_line.command == PJLinkProtocol.INPUT:
-					if command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(command_line.command, '%s%s' % (self.input[0], self.input[1]))
-					elif len(command_line.data) == 2:
-						self.input = [command_line.data[0], command_line.data[1]]
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.OK)
-					else:
-						response = PJLinkResponse(command_line.commands, PJLinkProtocol.ERROR_2)
-						
-				elif command_line.command == PJLinkProtocol.AVAILABLE_INPUTS:
-					if command_line.data == PJLinkProtocol.QUERY:
-						data = ' '.join(['%s%s' % (input[0], input[1]) for input in self.available_inputs])
-						response = PJLinkResponse(command_line.command, data)
-					else:
-						response = PJLinkResponse(command_line.commands, PJLinkProtocol.ERROR_2)
-						
-				elif command_line.command == PJLinkProtocol.MUTE:
-					if command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(command_line.command, self.mute_state)
-					elif command_line.data == PJLinkProtocol.AUDIO_VIDEO_MUTE_ON or command_line.data == PJLinkProtocol.AUDIO_VIDEO_MUTE_OFF or command_line.data == PJLinkProtocol.VIDEO_MUTE_ON or command_line.data == PJLinkProtocol.VIDEO_MUTE_OFF or command_line.data == PJLinkProtocol.AUDIO_MUTE_ON or command_line.data == PJLinkProtocol.AUDIO_MUTE_OFF:
-						self.mute_state = command_line.data
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.OK)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				elif command_line.command == PJLinkProtocol.NAME:
-					if command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(command_line.command, self.projector_name)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				elif command_line.command == PJLinkProtocol.MANUFACTURE_NAME:
-					if command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(command_line.command, self.manufacture_name)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				elif command_line.command == PJLinkProtocol.PRODUCT_NAME:
-					if command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(command_line.command, self.product_name)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				elif command_line.command == PJLinkProtocol.OTHER_INFO:
-					if command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(command_line.command, self.other_info)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				elif command_line.command == PJLinkProtocol.CLASS_INFO:
-					if command_line.data == PJLinkProtocol.QUERY:
-						response = PJLinkResponse(command_line.command, self.class_info)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				elif command_line.command == PJLinkProtocol.ERROR_STATUS:
-					if command_line.data == PJLinkProtocol.QUERY:
-						data = ''.join([error[1] for error in self.errors])
-						response = PJLinkResponse(command_line.command, data)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				elif command_line.command == PJLinkProtocol.LAMP:
-					if command_line.data == PJLinkProtocol.QUERY:
-						data = ' '.join(['%s %s' % (lamp[0], '1' if lamp[1] == True else '0') for lamp in self.lamps])
-						response = PJLinkResponse(command_line.command, data)
-					else:
-						response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
-
-				else:
-					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_1)
-					
+			if not auth_request.authentication_hash_matches(command_line.authentication_hash):
+				response = PJLinkResponse(PJLinkProtocol.AUTHENTICATE, PJLinkProtocol.INVALID_PASSWORD_ERROR, version=None)
 				client.send(response.encode())
-			client.close() 
+				client.close()
+				continue
+				
+			if command_line.command == PJLinkProtocol.POWER:
+				if command_line.data == PJLinkProtocol.ON or command_line.data == PJLinkProtocol.OFF:
+					self.power_state = command_line.data
+					for lamp in self.lamps: lamp[1] = command_line.data == PJLinkProtocol.ON
+					response = PJLinkResponse(PJLinkProtocol.POWER, PJLinkProtocol.OK)
+				elif command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(PJLinkProtocol.POWER, self.power_state)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.INPUT:
+				if command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(command_line.command, '%s%s' % (self.input[0], self.input[1]))
+				elif len(command_line.data) == 2:
+					self.input = [command_line.data[0], command_line.data[1]]
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.OK)
+				else:
+					response = PJLinkResponse(command_line.commands, PJLinkProtocol.ERROR_2)
+					
+			elif command_line.command == PJLinkProtocol.AVAILABLE_INPUTS:
+				if command_line.data == PJLinkProtocol.QUERY:
+					data = ' '.join(['%s%s' % (input[0], input[1]) for input in self.available_inputs])
+					response = PJLinkResponse(command_line.command, data)
+				else:
+					response = PJLinkResponse(command_line.commands, PJLinkProtocol.ERROR_2)
+					
+			elif command_line.command == PJLinkProtocol.MUTE:
+				if command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(command_line.command, self.mute_state)
+				elif command_line.data == PJLinkProtocol.AUDIO_VIDEO_MUTE_ON or command_line.data == PJLinkProtocol.AUDIO_VIDEO_MUTE_OFF or command_line.data == PJLinkProtocol.VIDEO_MUTE_ON or command_line.data == PJLinkProtocol.VIDEO_MUTE_OFF or command_line.data == PJLinkProtocol.AUDIO_MUTE_ON or command_line.data == PJLinkProtocol.AUDIO_MUTE_OFF:
+					self.mute_state = command_line.data
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.OK)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.NAME:
+				if command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(command_line.command, self.projector_name)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.MANUFACTURE_NAME:
+				if command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(command_line.command, self.manufacture_name)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.PRODUCT_NAME:
+				if command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(command_line.command, self.product_name)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.OTHER_INFO:
+				if command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(command_line.command, self.other_info)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.CLASS_INFO:
+				if command_line.data == PJLinkProtocol.QUERY:
+					response = PJLinkResponse(command_line.command, self.class_info)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.ERROR_STATUS:
+				if command_line.data == PJLinkProtocol.QUERY:
+					data = ''.join([error[1] for error in self.errors])
+					response = PJLinkResponse(command_line.command, data)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			elif command_line.command == PJLinkProtocol.LAMP:
+				if command_line.data == PJLinkProtocol.QUERY:
+					data = ' '.join(['%s %s' % (lamp[0], '1' if lamp[1] == True else '0') for lamp in self.lamps])
+					response = PJLinkResponse(command_line.command, data)
+				else:
+					response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_2)
+
+			else:
+				response = PJLinkResponse(command_line.command, PJLinkProtocol.ERROR_1)
+				
+			client.send(response.encode())
+			client.close()
+			
 		self.server.close()
 		
 class PJLinkTest(TestCase):
@@ -190,10 +201,29 @@ class PJLinkTest(TestCase):
 			time.sleep(1)
 			seconds_to_wait -= 1
 		self.failUnless(projector.running)
-		
-		# make sure that power querying and setting work as expected
+
+		# Connection and authentication
+		bad_controller = PJLinkController(projector.server.getsockname()[0], projector.server.getsockname()[1], password='badPassword')
+		try:
+			bad_controller.query_name()
+			self.fail() # should have thrown an authentication exception
+		except PJLinkAuthenticationException:
+			pass # this is what should happen
+		projector.password = None
+		unauth_controller = PJLinkController(projector.server.getsockname()[0], projector.server.getsockname()[1], password=None)
+		try:
+			unauth_controller.query_name()
+		except PJLinkAuthenticationException:
+			self.fail() # should not throw an authentication exception because both think there's no password
+		projector.password = 'moceanWorker'
+		controller = PJLinkController(projector.server.getsockname()[0], projector.server.getsockname()[1], password=projector.password)
+		try:
+			self.failUnlessEqual(controller.query_name(), projector.projector_name)
+		except PJLinkAuthenticationException:
+			self.fail() # should not throw an authentication exception because they agree on the password
+
+		# Power setting, querying
 		self.failUnless(projector.lamps[0][1] == False)
-		controller = PJLinkController(projector.server.getsockname()[0], projector.server.getsockname()[1])
 		self.failUnlessEqual(controller.query_power(), PJLinkProtocol.POWER_OFF_STATUS)
 		self.failUnless(controller.power_on())
 		self.failUnlessEqual(controller.query_power(), PJLinkProtocol.POWER_ON_STATUS)
@@ -219,7 +249,6 @@ class PJLinkTest(TestCase):
 
 		# Available inputs
 		available_inputs = controller.query_available_inputs()
-		print available_inputs
 		self.failUnlessEqual(len(available_inputs), len(projector.available_inputs))
 		for index, available_input in enumerate(projector.available_inputs):
 			self.failUnlessEqual(available_inputs[index][0], projector.available_inputs[index][0])

@@ -46,6 +46,7 @@ class PJLinkProtocol:
 	PRODUCT_NAME = "INF2"
 	OTHER_INFO = "INFO"
 	CLASS_INFO = "CLSS"
+	AUTHENTICATE = "PJLINK"
 
 	# RESPONSE
 	OK = "OK"
@@ -53,6 +54,7 @@ class PJLinkProtocol:
 	ERROR_2 = "ERR2"
 	ERROR_3 = "ERR3"
 	ERROR_4 = "ERR4"
+	INVALID_PASSWORD_ERROR = 'ERRA'
 	POWER_OFF_STATUS = "0"
 	POWER_ON_STATUS = "1"
 	COOLING_STATUS = "2"
@@ -62,7 +64,53 @@ class PJLinkProtocol:
 	ERROR_STATUS_OK = "0"
 	ERROR_STATUS_WARNING = "1"
 	ERROR_STATUS_ERROR = "2"
-	
+
+class PJLinkAuthenticationException(Exception):
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
+
+class PJLinkAuthenticationRequest:
+	"""A codec for the PJLink request from the projector for authentication or an indicator that no authentication is required."""
+	def __init__(self, password=None, seed=None):
+		self.password = password
+		self.seed = seed
+		if self.seed == None and self.password != None: self.seed = PJLinkAuthenticationRequest.generate_seed()
+
+	def encode(self):
+		if self.seed:
+			return '%s %s %s' % (PJLinkProtocol.AUTHENTICATE, PJLinkProtocol.ON, self.seed)
+		else:
+			return '%s %s' % (PJLinkProtocol.AUTHENTICATE, PJLinkProtocol.OFF)
+
+	def authentication_hash_matches(self, auth_hash):
+		if auth_hash == None: return self.seed == None
+		if self.seed == None: return False
+		correct_hash = PJLinkAuthenticationRequest.generate_hash(self.seed, self.password)
+		return correct_hash == auth_hash
+
+	@classmethod
+	def decode(cls, encoded_request):
+		tokens = encoded_request.split(' ')
+		if tokens[1] == PJLinkProtocol.ON:
+			return PJLinkAuthenticationRequest(seed=tokens[2])
+		else:
+			return PJLinkAuthenticationRequest()
+
+	@classmethod
+	def generate_hash(cls, seed, password):
+		import random, hashlib
+		m = hashlib.md5()
+		m.update('%s %s' % (seed, password))
+		return m.hexdigest()
+
+	@classmethod
+	def generate_seed(cls):
+		import random
+		"""Generate a random seed string which is four numbers, each in two character ASCII hex format"""
+		return ''.join([('%x' % random.randint(0,255)) for i in range(4)])
+
 class PJLinkCommandLine:
 	"""Encoding and decoding methods for PJLink commands
 		Encoded command lines are of the following format:
@@ -73,22 +121,28 @@ class PJLinkCommandLine:
 		
 		An example: %%1POWR 1\\r
 	"""
-	def __init__(self, command, data, version=1):
+	def __init__(self, command, data, version=1, authentication_hash=None):
 		self.command = command
 		self.data = data
 		self.version = version
+		self.authentication_hash = authentication_hash
 
 	def encode(self):
 		"""Encode the command in the transmission format"""
-		return '%%%s%s %s\r' % (self.version, self.command, self.data)
+		if self.authentication_hash:
+			return '%s%%%s%s %s\r' % (self.authentication_hash, self.version, self.command, self.data)
+		else:
+			return '%%%s%s %s\r' % (self.version, self.command, self.data)
 
 	@classmethod
 	def decode(cls, encoded_command_line):
-		"""Decode the raw data and return a PJLinkCommandLine instance"""
-		version = int(encoded_command_line[1:2])
-		command = encoded_command_line[2:6]
-		data = encoded_command_line[7:len(encoded_command_line) - 1]
-		return PJLinkCommandLine(command, data, version)
+		"""Decode the raw data and return a PJLinkCommandLine instance."""
+		auth_token, encoded_command = encoded_command_line.strip().split('%')
+		auth_token = None if len(auth_token) == 0 else auth_token
+		version = int(encoded_command[0:1])
+		command = encoded_command[1:5]
+		data = encoded_command[6:len(encoded_command_line) - 1]
+		return PJLinkCommandLine(command, data, version, auth_token)
 
 class PJLinkResponse:
 	"""Encoding and decoding methods for PJLink responses from the projector
@@ -110,15 +164,21 @@ class PJLinkResponse:
 
 	def encode(self):
 		"""Encode the command in the transmission format"""
-		return '%%%s%s=%s\r' % (self.version, self.command, self.data)
+		if self.version:
+			return '%%%s%s=%s\r' % (self.version, self.command, self.data)
+		else:
+			return '%s=%s\r' % (self.command, self.data)
 
 	@classmethod
 	def decode(cls, encoded_command_line):
 		"""Decode the raw data and return a PJLinkResponse instance"""
-		version = int(encoded_command_line[1:2])
-		command = encoded_command_line[2:6]
-		data = encoded_command_line[7:len(encoded_command_line) - 1]
-		return PJLinkResponse(command, data, version)
+		if encoded_command_line[0] == '%': # It's a non-auth response
+			version = int(encoded_command_line[1:2])
+			command = encoded_command_line[2:6]
+			data = encoded_command_line[7:len(encoded_command_line) - 1]
+			return PJLinkResponse(command, data, version)
+		if encoded_command_line.startswith('%s=%s' % (PJLinkProtocol.AUTHENTICATE, PJLinkProtocol.INVALID_PASSWORD_ERROR)):
+			return PJLinkResponse(PJLinkProtocol.AUTHENTICATE, PJLinkProtocol.INVALID_PASSWORD_ERROR)
 
 class PJLinkController:
 	"""A command object for projectors which are controlled using the PJLink protocol"""
@@ -192,25 +252,29 @@ class PJLinkController:
 	def query_class_info(self): return self._send_command_line(PJLinkCommandLine(PJLinkProtocol.CLASS_INFO, PJLinkProtocol.QUERY, self.version)).data
 
 	def _send_command_line(self, command_line):
-		print 'request:', command_line.encode()
-		encoded_response = self._raw_round_trip(command_line.encode())
-		print'response:', encoded_response
-		return PJLinkResponse.decode(encoded_response)
-
-	def _raw_round_trip(self, data):
-		try:
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			sock.settimeout(15)
-			sock.connect((self.host, self.port))
-			sock.send(data)
-			value = sock.recv(512)
-			sock.close()
-			if value == '': return None
-			return value
-		except:
-			print pprint.pformat(traceback.format_exc()) 
-			sock.close()
-			return None
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.settimeout(15)
+		sock.connect((self.host, self.port))
+		encoded_auth_request = sock.recv(512)
+		#print '\n\nauth request', encoded_auth_request
+		auth_request = PJLinkAuthenticationRequest.decode(encoded_auth_request)
+		if auth_request.seed:
+			if self.password:
+				command_line.authentication_hash = PJLinkAuthenticationRequest.generate_hash(auth_request.seed, self.password)
+			else:
+				sock.close()
+				raise PJLinkAuthenticationException('The Projector requires a password, but we have none')
+			
+		#print 'sending', command_line.encode()
+		sock.send(command_line.encode())
+		encoded_response = sock.recv(512)
+		#print 'received', encoded_response
+		sock.close()
+		if encoded_response == '': encoded_response = None
+		response = PJLinkResponse.decode(encoded_response)
+		if response.command == PJLinkProtocol.AUTHENTICATE and response.data == PJLinkProtocol.INVALID_PASSWORD_ERROR:
+			raise PJLinkAuthenticationException('The projector rejected our password')
+		return response
 
 def main():
 	pass
