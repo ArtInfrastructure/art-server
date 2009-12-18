@@ -16,6 +16,7 @@ urlpatterns = patterns('',
 	(r'^api/artcam/(?P<id>[\d]+)/$', 'artcam.api_views.artcam'),
 	(r'^api/artcam/(?P<artcam_id>[\d]+)/photo/$', 'artcam.api_views.photos'),
 	(r'^api/artcam/(?P<artcam_id>[\d]+)/photo/(?P<photo_id>[\d]+)/$', 'artcam.api_views.photo'),
+	(r'^api/artcam/(?P<artcam_id>[\d]+)/photo/latest/$', 'artcam.api_views.latest_photo'),
 
 	(r'^api/bnlight/$', 'lighting.api_views.bacnet_lights'),
 	(r'^api/bnlight/(?P<id>[\d]+)/$', 'lighting.api_views.bacnet_light'),

@@ -45,3 +45,8 @@ def photo(request, artcam_id, photo_id):
 	photo = get_object_or_404(ArtcamPhoto, pk=photo_id)
 	if photo.artcam.id != int(artcam_id): raise Http404
 	return HttpResponse(dehydrate_to_xml(photo) + IMAGE_COMMENT, content_type="text/xml")
+
+def latest_photo(request, artcam_id):
+	photos = ArtcamPhoto.objects.filter(artcam__id=artcam_id)
+	if len(photos) == 0: raise Http404
+	return HttpResponse(dehydrate_to_xml(photos[0]) + IMAGE_COMMENT, content_type="text/xml")
