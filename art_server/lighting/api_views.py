@@ -28,6 +28,7 @@ from django.utils import feedgenerator
 from models import *
 from art_server.hydration import dehydrate_to_list_xml, dehydrate_to_xml
 from bacnet_control import read_analog_output, write_analog_output_int
+from pjlink import PJLinkController, PJLinkProtocol
 
 def bacnet_lights(request):
 	return HttpResponse(dehydrate_to_list_xml(BACNetLight.objects.all()), content_type="text/xml")
@@ -57,3 +58,40 @@ def projectors(request):
 def projector(request, id):
 	projector = get_object_or_404(Projector, pk=id)
 	return HttpResponse(dehydrate_to_xml(projector), content_type="text/xml")
+
+class LampInfo:
+	"""Wraps the projector's lamp info for dehydration"""
+	def __init__(self, lighting_hours, is_on):
+		self.lighting_hours = lighting_hours
+		self.is_on = is_on
+	class HydrationMeta:
+		attributes = ['lighting_hours', 'is_on']
+
+
+class ProjectorInfo:
+	"""Used to wrap the projector information for dehydration"""
+	def __init__(self, power_state, projector_name, manufacture_name, product_name, other_info):
+		self.power_state = power_state
+		self.projector_name = projector_name
+		self.manufacture_name = manufacture_name
+		self.product_name = product_name
+		self.other_info = other_info
+		self.lamps = []
+	class HydrationMeta:
+		attributes = ['power_state', 'projector_name', 'manufacture_name', 'product_name', 'other_info']
+		nodes = ['lamps']
+
+def projector_info(request, id):
+	projector = get_object_or_404(Projector, pk=id)
+	controller = PJLinkController(projector.pjlink_host, projector.pjlink_port, projector.pjlink_password)
+
+	if request.method == 'POST':
+		if request.POST.get('power', None) == PJLinkProtocol.POWER_ON_STATUS:
+			controller.power_on()
+		elif request.POST.get('power', None) == PJLinkProtocol.POWER_OFF_STATUS:
+			controller.power_off()
+
+	info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info())
+	for lamp in controller.query_lamps():
+		info.lamps.append(LampInfo(lamp[0], lamp[1]))
+	return HttpResponse(dehydrate_to_xml(info), content_type="text/xml")

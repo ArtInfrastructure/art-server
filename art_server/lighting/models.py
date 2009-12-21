@@ -47,10 +47,13 @@ class BACNetLight(models.Model):
 class Projector(models.Model):
 	"""A light projection system which is controlled via the net."""
 	name = models.CharField(max_length=1024, null=False, blank=False)
+	pjlink_host = models.CharField(max_length=1024, null=False, blank=False)
+	pjlink_port = models.IntegerField(null=False, blank=False, default=4352)
+	pjlink_password = models.CharField(max_length=512, blank=True, null=True)
 	@models.permalink
 	def get_absolute_url(self): return ('lighting.views.projector', (), { 'id':self.id })
 	def __unicode__(self): return '%s' % self.name
 	class Meta:
 		ordering = ['name']
 	class HydrationMeta:
-		attributes = ['id', 'name']
+		attributes = ['id', 'name', 'pjlink_host', 'pjlink_port', 'pjlink_password']

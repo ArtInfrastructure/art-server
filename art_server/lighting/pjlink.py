@@ -4,6 +4,7 @@
 """
 import socket
 import pprint, traceback
+import sys, time
 
 class PJLinkProtocol:
 	"""Holds the constants for the PJLink protocol"""
@@ -276,8 +277,34 @@ class PJLinkController:
 			raise PJLinkAuthenticationException('The projector rejected our password')
 		return response
 
+USAGE_MESSAGE = 'usage: pjlink [projector]'
+
 def main():
-	pass
+	from django.core.management import setup_environ
+	import settings
+	setup_environ(settings)
+	try:
+		action = sys.argv[1]
+	except IndexError:
+		print USAGE_MESSAGE
+		return
+	if action == 'projector':
+		from tests.test_lighting import MockPJLinkProjector
+		projector = MockPJLinkProjector()
+		projector.port = 4352
+		projector.start()
+		seconds_to_wait = 5
+		while projector.running == False and seconds_to_wait > 0:
+			time.sleep(1)
+			seconds_to_wait -= 1
+		if not projector.running:
+			print 'Could not start the projector'
+			return
+		print 'Projector running: %s:%s' % (projector.server.getsockname()[0], projector.server.getsockname()[1])
+		while True: time.sleep(100)
+	else:
+		print USAGE_MESSAGE
+		return
 
 if __name__ == "__main__":
 	main()

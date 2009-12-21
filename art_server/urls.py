@@ -23,6 +23,7 @@ urlpatterns = patterns('',
 	(r'^api/bnlight/(?P<id>[\d]+)/value/$', 'lighting.api_views.bacnet_light_value'),
 	(r'^api/projector/$', 'lighting.api_views.projectors'),
 	(r'^api/projector/(?P<id>[\d]+)/$', 'lighting.api_views.projector'),
+	(r'^api/projector/(?P<id>[\d]+)/info/$', 'lighting.api_views.projector_info'),
 
 	(r'^api/aodb/$', 'airport.views.snapshot_list'),
 	(r'^api/aodb/latest\.xml$', 'airport.views.latest_snapshot'),
