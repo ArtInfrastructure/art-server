@@ -56,4 +56,4 @@ class Projector(models.Model):
 	class Meta:
 		ordering = ['name']
 	class HydrationMeta:
-		attributes = ['id', 'name', 'pjlink_host', 'pjlink_port', 'pjlink_password']
+		attributes = ['id', 'name', 'pjlink_host', 'pjlink_port']
