@@ -1,1 +1,0 @@
-"""A django app which tracks BACnet devices and allows for periodic recording of properties."""
