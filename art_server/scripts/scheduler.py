@@ -3,6 +3,7 @@
 A simple task scheduling script which schedules tasks defined in settings.SCHEDULED_TASKS.
 Copied wholesale from http://code.activestate.com/recipes/114644/ then tweaked for Django
 """
+import os, sys
 import time
 import threading
 import readline
@@ -74,14 +75,32 @@ class Console(cmd.Cmd):
 	def default(self, line):
 		print 'line %s' % line
 
+def write_proc(lockfile_path):
+	if os.access(lockfile_path, os.F_OK):
+		pidfile = open(lockfile_path, "r")
+		pidfile.seek(0)
+		old_pd = pidfile.readline()
+		if os.path.exists("/proc/%s" % old_pd): # this only works on OSes with /proc/ (e.g. linux)
+			print "You already have an instance of the program running"
+			print "It is running as process %s," % old_pd
+			return False
+		else:
+			os.remove(lockfile_path)
+
+	pidfile = open(lockfile_path, "w")
+	pidfile.write("%s" % os.getpid())
+	pidfile.close
+	return True
+
 if __name__ == '__main__':
 	import sys
 	from django.core.management import setup_environ
 	import settings
 	import logging
 	logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', filename='/tmp/scheduler-art-server.txt', filemode = 'w')
-
 	setup_environ(settings)
+
+	write_proc('/tmp/artserver_scheduler.pid')
 
 	s = Scheduler()
 	for task in settings.SCHEDULED_TASKS:
