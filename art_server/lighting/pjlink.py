@@ -139,7 +139,7 @@ class PJLinkCommandLine:
 	def decode(cls, encoded_command_line):
 		"""Decode the raw data and return a PJLinkCommandLine instance."""
 		auth_token, encoded_command = encoded_command_line.strip().split('%')
-		auth_token = None if len(auth_token) == 0 else auth_token
+		if len(auth_token) == 0: auth_token = None
 		version = int(encoded_command[0:1])
 		command = encoded_command[1:5]
 		data = encoded_command[6:len(encoded_command_line) - 1]
@@ -243,7 +243,7 @@ class PJLinkController:
 
 		results = [[int(lit_time)] for lit_time in response.data.split(' ')[::2]]
 		for index, lamp_id in enumerate(response.data.split(' ')[1::2]):
-			results[index].append(True if int(lamp_id) == 1 else False)
+			results[index].append(int(lamp_id) == 1)
 		return results
 
 	def query_name(self): return self._send_command_line(PJLinkCommandLine(PJLinkProtocol.NAME, PJLinkProtocol.QUERY, self.version)).data
