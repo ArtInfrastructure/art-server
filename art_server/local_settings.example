@@ -10,6 +10,8 @@ IBOOT_USERNAME='user'
 IBOOT_PASSWORD='pass'
 IBOOT_POWER_PASSWORD = 'pass'
 
+BACNET_PROXY_URL = 'http://127.0.0.1:8080/api/bacnet/'
+
 SECRET_KEY = 'somesecretstring'
 
 from artcam.tasks import ArtcamTask

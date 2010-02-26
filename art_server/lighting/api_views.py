@@ -4,6 +4,7 @@ import calendar
 import pprint
 import traceback
 import logging
+import urllib
 
 from django.conf import settings
 from django.db.models import Q
@@ -27,7 +28,6 @@ from django.utils import feedgenerator
 
 from models import *
 from art_server.hydration import dehydrate_to_list_xml, dehydrate_to_xml
-from bacnet_control import read_analog_output, write_analog_output_int
 from pjlink import PJLinkController, PJLinkProtocol
 
 def bacnet_lights(request):
@@ -39,14 +39,15 @@ def bacnet_light(request, id):
 
 def bacnet_light_value(request, id):
 	light = get_object_or_404(BACNetLight, pk=id)
+	api_url = '%sdevice/%s/%s/' % (settings.BACNET_PROXY_URL, light.device_id, light.property_id)
 	if request.method == 'POST' and request.POST.get('value', None):
 		try:
-			new_value = int(request.POST.get('value', None))
-			write_analog_output_int(light.device_id, light.property_id, new_value)
+			new_value = request.POST.get('value', None)
+			result = urllib.urlopen(api_url, urllib.urlencode({'value':new_value})).read()
 		except:
 			logging.exception('Could not read the posted value for bacnet light %s' % request.POST.get('value', None))
 	try:
-		value = read_analog_output(light.device_id, light.property_id)
+		value = urllib.urlopen(api_url).read()
 	except:
 		logging.exception('Could not read the analog output for bacnet light %s' % light)
 		value = -1
