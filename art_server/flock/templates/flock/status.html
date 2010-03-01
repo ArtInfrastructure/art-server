@@ -29,12 +29,6 @@ function hideErrorMessage(){
 {% endif %}
 
 {% if request.user.is_staff %}
-<h2>Manually Notify Art Systems:</h2>
-<form action="." method="post">
-	{% for field in status_form %}{{ field }}{% endfor %}
-	<input type="submit" value="send notifications" />
-</form>
-
 <h2>Registered Listeners:</h2>
 <ul>
 	{% for status_listener in status_listeners %}

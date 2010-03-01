@@ -26,9 +26,6 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_unicode
 from django.db.models import Q
 
-NORMAL_STATUS = 'normal'
-EMERGENCY_STATUS = 'emergency'
-
 class StatusListenerTest(models.Model):
 	name = models.CharField(max_length=512, null=False, blank=False)
 	def __unicode__(self):

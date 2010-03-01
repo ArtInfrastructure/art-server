@@ -6,4 +6,4 @@ from django.utils.html import strip_tags
 from models import *
 
 class StatusForm(forms.Form):
-	status = forms.ChoiceField(choices=[ (NORMAL_STATUS,NORMAL_STATUS), (EMERGENCY_STATUS,EMERGENCY_STATUS) ])
+	status = forms.ChoiceField(choices=[  ])

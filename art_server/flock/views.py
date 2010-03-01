@@ -46,7 +46,6 @@ def status_listener(request, host):
 		raise
 
 def index(request):
-	status_form = StatusForm()
 	page_message = None
 	try:
 		if request.method == 'POST' and request.POST.get('register', None):
@@ -67,13 +66,8 @@ def index(request):
 				sl.delete()
 			except StatusListener.DoesNotExist:
 				logging.debug('Tried to unregister an unknown host: %s' % host)
-		elif request.user.is_staff and request.method == 'POST' and request.POST.get('status', None):
-			status_form = StatusForm(request.POST)
-			if status_form.is_valid():
-				StatusListener.objects.broadcast_status(status_form.cleaned_data['status'])
-				page_message = 'Notified art of status: %s' % status_form.cleaned_data['status']
 				
-		return render_to_response('flock/status.html', { 'status_form':status_form, 'page_message':page_message, 'status_listeners':StatusListener.objects.all() }, context_instance=RequestContext(request))
+		return render_to_response('flock/status.html', { 'page_message':page_message, 'status_listeners':StatusListener.objects.all() }, context_instance=RequestContext(request))
 	except:
 		logging.exception('Could not set the status')
 		raise
