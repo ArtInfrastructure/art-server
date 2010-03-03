@@ -5,6 +5,7 @@ import pprint
 import traceback
 import logging
 import urllib
+import sys
 
 from django.conf import settings
 from django.db.models import Q
@@ -46,11 +47,12 @@ def bacnet_light_value(request, id):
 			result = urllib.urlopen(api_url, urllib.urlencode({'value':new_value})).read()
 		except:
 			logging.exception('Could not read the posted value for bacnet light %s' % request.POST.get('value', None))
+			return HttpResponseServerError('Could not write the analog output for bacnet light: %s\n\n' % sys.exc_info()[1])
 	try:
 		value = urllib.urlopen(api_url).read()
 	except:
 		logging.exception('Could not read the analog output for bacnet light %s' % light)
-		value = -1
+		return HttpResponseServerError('Could not read the analog output for bacnet light: %s\n\n' % sys.exc_info()[1])
 	return HttpResponse(value, content_type="text/plain")
 
 def projectors(request):
