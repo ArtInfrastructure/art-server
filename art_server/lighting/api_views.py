@@ -50,6 +50,7 @@ def bacnet_light_value(request, id):
 			return HttpResponseServerError('Could not write the analog output for bacnet light: %s\n\n' % sys.exc_info()[1])
 	try:
 		value = urllib.urlopen(api_url).read()
+		print value
 	except:
 		logging.exception('Could not read the analog output for bacnet light %s' % light)
 		return HttpResponseServerError('Could not read the analog output for bacnet light: %s\n\n' % sys.exc_info()[1])

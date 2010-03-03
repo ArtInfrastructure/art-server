@@ -40,14 +40,16 @@ def bacnet_light(request, id):
 		if light_control_form.is_valid():
 			try:
 				new_value = request.POST.get('value', None)
-				urllib.urlopen(api_url, urllib.urlencode({'value':new_value})).read()
+				result = urllib.urlopen(api_url, urllib.urlencode({'value':new_value})).read()
 			except:
+				traceback.print_exc()
 				logging.exception('Could not read the posted value for bacnet light %s' % request.POST.get('value', None))
 	try:
 		light_value = urllib.urlopen(api_url).read()
-		raise IOError('Could not read the output for bacnet light: %s' % light_value)
+		if not light_value.isdigit(): raise IOError(light_value)
 		light_control_form = LightControlForm(data={'light_value':light_value})
 	except:
+		traceback.print_exc()
 		logging.exception('Could not read the analog output for bacnet light %s' % light)
 		light_value = None
 		light_control_form = LightControlForm()
