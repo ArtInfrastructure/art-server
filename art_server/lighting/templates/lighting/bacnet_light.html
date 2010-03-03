@@ -4,6 +4,7 @@
 
 {% block style %}
 #content th { padding-right: 10px }
+.error-message { color: #F22; }
 {% endblock %}
 
 {% block content%}
@@ -13,12 +14,15 @@
 	<tr><th>Property ID:</th><td>{{ light.property_id }}</td></tr>
 </table>
 
-
-<h2 style="margin-top: 50px;">Some rough stuff:</h2>
-<a href="{% url lighting.api_views.bacnet_light_value light.id %}">read value</a>
-
-<form action="{% url lighting.api_views.bacnet_light_value light.id %}" method="post">
-	<input type="input" value="100" name="value" />
+<h3>Set the level:</h3>
+{% ifequal light_value None %}
+   <p class="error-message">
+      Could not read the current value!
+      <a href="{% url lighting.api_views.bacnet_light_value light.id %}">see output</a>
+   </p>
+{% endifequal %}
+<form action="." method="post">
+   {{ light_control_form }}
 	<input type="submit" value="set value" />
 </form>
 

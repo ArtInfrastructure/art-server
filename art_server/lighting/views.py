@@ -25,6 +25,7 @@ from django.template.loader import render_to_string
 from django.utils import feedgenerator
 
 from models import *
+from forms import *
 
 @staff_member_required
 def index(request):
@@ -33,7 +34,24 @@ def index(request):
 @staff_member_required
 def bacnet_light(request, id):
 	light = get_object_or_404(BACNetLight, pk=id)
-	return render_to_response('lighting/bacnet_light.html', { 'light':light }, context_instance=RequestContext(request))
+	api_url = '%sdevice/%s/%s/' % (settings.BACNET_PROXY_URL, light.device_id, light.property_id)
+	if request.method == 'POST':
+		light_control_form = LightControlForm(request.POST)
+		if light_control_form.is_valid():
+			try:
+				new_value = request.POST.get('value', None)
+				urllib.urlopen(api_url, urllib.urlencode({'value':new_value})).read()
+			except:
+				logging.exception('Could not read the posted value for bacnet light %s' % request.POST.get('value', None))
+	try:
+		light_value = urllib.urlopen(api_url).read()
+		raise IOError('Could not read the output for bacnet light: %s' % light_value)
+		light_control_form = LightControlForm(data={'light_value':light_value})
+	except:
+		logging.exception('Could not read the analog output for bacnet light %s' % light)
+		light_value = None
+		light_control_form = LightControlForm()
+	return render_to_response('lighting/bacnet_light.html', {'light_value':light_value, 'light_control_form':light_control_form, 'light':light }, context_instance=RequestContext(request))
 
 @staff_member_required
 def projector(request, id):
