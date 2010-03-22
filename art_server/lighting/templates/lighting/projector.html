@@ -9,7 +9,8 @@
 {% block content%}
 <h1><a href="{% url lighting.views.index %}">Lighting</a>: {{ projector.name }}</h1>
 <table>
-	<tr><th>Something:</th><td>or other</td></tr>
+   <tr><th>Web Interface:</th><td><a href="http://{{ projector.pjlink_host}}/">http://{{ projector.pjlink_host}}/</a></td></tr>
+	<tr><th>PJLink host/port:</th><td>{{ projector.pjlink_host}}/{{ projector.pjlink_port }}</td></tr>
 </table>
 
 {% endblock %}
