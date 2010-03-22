@@ -15,5 +15,5 @@ class BACNetLightAdmin(StyledModelAdmin):
 admin.site.register(BACNetLight, BACNetLightAdmin)	
 
 class ProjectorAdmin(StyledModelAdmin):
-	list_display = ('name', )
+	list_display = ('name', 'pjlink_host', 'pjlink_port')
 admin.site.register(Projector, ProjectorAdmin)	

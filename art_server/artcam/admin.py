@@ -15,5 +15,5 @@ class ArtcamAdmin(StyledModelAdmin):
 admin.site.register(Artcam, ArtcamAdmin)	
 
 class ArtcamPhotoAdmin(StyledModelAdmin):
-	list_display = ('image', 'thumb')
+	list_display = ('image', 'created', 'thumb')
 admin.site.register(ArtcamPhoto, ArtcamPhotoAdmin)	
