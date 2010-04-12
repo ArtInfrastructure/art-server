@@ -4,7 +4,8 @@ MANAGERS = ADMINS
 
 LOGGING_NAME = '/tmp/art-server.log'
 
-BACNET_BIN_DIR = '/full/path/to/bacnet/bin'
+BACNET_BIN_DIR = '/usr/local/src/bacnet-stack-0.5.3/bin'
+BACNET_EXECUTABLE_EXTENSION = '' # empty for unix, .exe for windows
 
 IBOOT_USERNAME='user'
 IBOOT_PASSWORD='pass'

@@ -30,6 +30,7 @@ from django.utils import feedgenerator
 from models import *
 from art_server.hydration import dehydrate_to_list_xml, dehydrate_to_xml
 from pjlink import PJLinkController, PJLinkProtocol
+from bacnet_control import BacnetControl
 
 def bacnet_lights(request):
 	return HttpResponse(dehydrate_to_list_xml(BACNetLight.objects.all()), content_type="text/xml")
@@ -40,21 +41,20 @@ def bacnet_light(request, id):
 
 def bacnet_light_value(request, id):
 	light = get_object_or_404(BACNetLight, pk=id)
-	api_url = '%sdevice/%s/%s/' % (settings.BACNET_PROXY_URL, light.device_id, light.property_id)
+	control = BacnetControl(settings.BACNET_BIN_DIR)
 	if request.method == 'POST' and request.POST.get('value', None):
+		new_value = request.POST.get('value', None)
 		try:
-			new_value = request.POST.get('value', None)
-			result = urllib.urlopen(api_url, urllib.urlencode({'value':new_value})).read()
+			control.write_analog_output_int(light.device_id, light.property_id, int(new_value))
 		except:
-			logging.exception('Could not read the posted value for bacnet light %s' % request.POST.get('value', None))
-			return HttpResponseServerError('Could not write the analog output for bacnet light: %s\n\n' % sys.exc_info()[1])
+			logging.exception('Could not write the posted value (%s) for bacnet device %s property %s' % (new_value, light.device_id, light.property_id))
+			return HttpResponseServerError('Could not write the posted value (%s) for bacnet device %s property %s\n\n%s' % (new_value, light.device_id, light.property_id, sys.exc_info()[1]))
 	try:
-		value = urllib.urlopen(api_url).read()
-		print value
+		value = control.read_analog_output(light.device_id, light.property_id)
+		return HttpResponse(value, content_type="text/plain")
 	except:
-		logging.exception('Could not read the analog output for bacnet light %s' % light)
-		return HttpResponseServerError('Could not read the analog output for bacnet light: %s\n\n' % sys.exc_info()[1])
-	return HttpResponse(value, content_type="text/plain")
+		logging.exception('Could not read the analog output for bacnet device %s property %s' % (light.device_id, light.property_id))
+		return HttpResponseServerError('Could not read the analog output for bacnet device %s property %s\n\n%s' % (light.device_id, light.property_id, sys.exc_info()[1]))
 
 def projectors(request):
 	return HttpResponse(dehydrate_to_list_xml(Projector.objects.all()), content_type="text/xml")

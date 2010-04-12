@@ -1,5 +1,6 @@
 # Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 import datetime
+import sys
 import calendar
 import pprint
 import traceback
@@ -24,6 +25,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.template.loader import render_to_string
 from django.utils import feedgenerator
 
+from bacnet_control import BacnetControl
+
 from models import *
 from forms import *
 
@@ -34,23 +37,21 @@ def index(request):
 @staff_member_required
 def bacnet_light(request, id):
 	light = get_object_or_404(BACNetLight, pk=id)
-	api_url = '%sdevice/%s/%s/' % (settings.BACNET_PROXY_URL, light.device_id, light.property_id)
+	control = BacnetControl(settings.BACNET_BIN_DIR)
 	if request.method == 'POST':
 		light_control_form = LightControlForm(request.POST)
 		if light_control_form.is_valid():
+			new_value = light_control_form.cleaned_data['light_value']
 			try:
-				new_value = request.POST.get('value', None)
-				result = urllib.urlopen(api_url, urllib.urlencode({'value':new_value})).read()
+				control.write_analog_output_int(light.device_id, light.property_id, int(new_value))
 			except:
-				traceback.print_exc()
-				logging.exception('Could not read the posted value for bacnet light %s' % request.POST.get('value', None))
+				logging.exception('Could not write the posted value (%s) for bacnet device %s property %s' % (new_value, light.device_id, light.property_id))
+				return HttpResponseServerError('Could not write the posted value (%s) for bacnet device %s property %s\n\n%s' % (new_value, light.device_id, light.property_id, sys.exc_info()[1]))
 	try:
-		light_value = urllib.urlopen(api_url).read()
-		if not light_value.isdigit(): raise IOError(light_value)
+		light_value = control.read_analog_output(light.device_id, light.property_id)
 		light_control_form = LightControlForm(data={'light_value':light_value})
 	except:
-		traceback.print_exc()
-		logging.exception('Could not read the analog output for bacnet light %s' % light)
+		logging.exception('Could not read the analog output for bacnet device %s property %s' % (light.device_id, light.property_id))
 		light_value = None
 		light_control_form = LightControlForm()
 	return render_to_response('lighting/bacnet_light.html', {'light_value':light_value, 'light_control_form':light_control_form, 'light':light }, context_instance=RequestContext(request))
