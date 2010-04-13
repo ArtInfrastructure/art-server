@@ -11,8 +11,6 @@ IBOOT_USERNAME='user'
 IBOOT_PASSWORD='pass'
 IBOOT_POWER_PASSWORD = 'pass'
 
-BACNET_PROXY_URL = 'http://127.0.0.1:8080/api/bacnet/'
-
 SECRET_KEY = 'somesecretstring'
 
 from artcam.tasks import ArtcamTask
@@ -21,6 +19,9 @@ SCHEDULED_TASKS = [FileMungerTask(), ArtcamTask()]
 
 ARTCAM_PUBLIC_USERNAME = 'user'
 ARTCAM_PUBLIC_PASSWORD = 'pass'
+
+ALERT_SECRET = 'some secret stored in an Alert Permission object on the art cloud'
+ALERT_API_URL = 'http://art cloud host here/api/alert/'
 
 PRODUCTION = True
 DEBUG = False
