@@ -12,13 +12,20 @@ import logging
 
 USAGE_MESSAGE = 'usage: bacnet_control <read-ao|write-ao> <device id> <property id> [<value>]'
 
+def clean_rp_result(read_result):
+	"""The read_result is something like (0, '100.000000\r\n'), so we slice out the number."""
+	quote_index = read_result.find("'")
+	slash_index = read_result.find("\\", start=quote_index)
+	return read_result[quote_index + 1:slash_index]
+
+
 class BacnetControl:
 	def __init__(self, bin_dir_path, bacnet_port=47809):
 		self.bin_dir_path = bin_dir_path
 		self.bacnet_port = bacnet_port
 	def run_command(self, args):
 		os.environ['BACNET_IP_PORT'] = '%s' % self.bacnet_port
-		proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+		proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=self.bin_dir_path)
 		output = ''
 		while True:
 			next_line = proc.stdout.readline()
