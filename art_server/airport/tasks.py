@@ -13,15 +13,16 @@ from settings import FILE_MUNGER_DIRECTORY
 
 class FileMungerTask(Task):
 	"""The schedule task which updates the airport snapshot data from a known directory of AODB data files.
-	THIS WILL DELETE FILES MORE THAN TWO DAYS OLD AND SNAPSHOTS MORE THAN 5 DAYS OLD"""
+	THIS WILL DELETE FILES MORE THAN TWO DAYS OLD AND SNAPSHOTS MORE THAN TWO DAYS OLD"""
 	def __init__(self, loopdelay=120, initdelay=0):
 		Task.__init__(self, self.do_it, loopdelay, initdelay)
+			
 	def do_it(self):
 		from django.contrib.sites.models import Site
 		from models import AirportSnapshot
 		site = Site.objects.get_current()
+
 		files = self.files_to_munge()
-		
 		result_elements = {}
 		for mdate, path in files:
 			# if it's older than 26 hours (in seconds) ignore
@@ -49,12 +50,19 @@ class FileMungerTask(Task):
 			snapshot = AirportSnapshot.objects.create(xml_data=etree.tostring(root, pretty_print=True))
 		else:
 			logging.error('Munged a snapshot with no flighlegs!')
+			self.send_alert('Empty Files Munged', 'The snapshot had no flight legs.')
 
-      	# Delete snapshots which are five or more days old
-		expiration_datetime = datetime.datetime.now() - datetime.timedelta(days=5)
+      	# Delete snapshots which are two or more days old
+		expiration_datetime = datetime.datetime.now() - datetime.timedelta(days=2)
 		old_snapshots = AirportSnapshot.objects.filter(created__lt=expiration_datetime)
 		for snapshot in old_snapshots: snapshot.delete()
-	
+
+		old_snapshots = AirportSnapshot.objects.all()
+		if len(old_snapshots) == 0:
+			self.send_alert('No airport snapshots', 'After running the munger task there were no airport snapshots.')
+		elif old_snapshots[0].created < datetime.datetime.now() - datetime.timedelta(hours=1):
+			self.send_alert('Airport snapshots are old', 'After running the munger task there were no snapshots in the last hour')
+		
 	def files_to_munge(self):
 		"""Returns an array of info about files in the form (creation_date, path), sorted in chronological order by modified date"""
 		entries = (os.path.join(FILE_MUNGER_DIRECTORY, fn) for fn in os.listdir(FILE_MUNGER_DIRECTORY))
