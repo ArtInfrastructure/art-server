@@ -24,6 +24,7 @@ class FileMungerTask(Task):
 
 		files = self.files_to_munge()
 		result_elements = {}
+		youngest_mdate = int(time.time()) - 100800
 		for mdate, path in files:
 			# if it's older than 26 hours (in seconds) ignore
 			if mdate < int(time.time()) - 100800:
@@ -31,6 +32,8 @@ class FileMungerTask(Task):
 				# if it's older than two days, delete it
 				if mdate < int(time.time()) - 172800: os.unlink(path)
 				continue
+
+			youngest_mdate = max(mdate, youngest_mdate)
 			
 			# if it's younger than a few seconds it may not be complete, so ignore
 			if mdate > int(time.time()) - 5: continue
@@ -43,6 +46,9 @@ class FileMungerTask(Task):
 				carrier = flightleg_element.xpath('//Carrier')[0].text
 				flight_number = flightleg_element.xpath('//FlightNumber')[0].text
 				result_elements[(carrier, flight_number)] = flightleg_element
+		
+		if youngest_mdate < int(time.time()) - 10800: # if there are not updates in three hours, send an alert
+			self.send_alert('No recent AODB updates', 'No update in three hours')
 		
 		root = etree.Element('snapshot')
 		for key in result_elements: root.append(result_elements[key])

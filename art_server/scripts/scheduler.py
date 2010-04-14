@@ -9,6 +9,8 @@ import threading
 import readline
 import cmd
 import logging
+import traceback
+import datetime
 
 class Task(threading.Thread):
 	def __init__(self, action, loopdelay, initdelay):
@@ -30,6 +32,7 @@ class Task(threading.Thread):
 			alert_command.handle(subject, message)
 			self.last_alert_datetime = datetime.datetime.now()
 		except:
+			traceback.print_exc()
 			logging.exception('Could not send an alert')
 
 	def run(self):
