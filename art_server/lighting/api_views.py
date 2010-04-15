@@ -51,7 +51,7 @@ def bacnet_light_value(request, id):
 			return HttpResponseServerError('Could not write the posted value (%s) for bacnet device %s property %s\n\n%s' % (new_value, light.device_id, light.property_id, sys.exc_info()[1]))
 	try:
 		value = control.read_analog_output(light.device_id, light.property_id)
-		return HttpResponse(value, content_type="text/plain")
+		return HttpResponse(value.__repr__(), content_type="text/plain")
 	except:
 		logging.exception('Could not read the analog output for bacnet device %s property %s' % (light.device_id, light.property_id))
 		return HttpResponseServerError('Could not read the analog output for bacnet device %s property %s\n\n%s' % (light.device_id, light.property_id, sys.exc_info()[1]))

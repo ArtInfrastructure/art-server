@@ -12,27 +12,23 @@ import logging
 
 USAGE_MESSAGE = 'usage: bacnet_control <read-ao|write-ao> <device id> <property id> [<value>]'
 
-def clean_rp_result(read_result):
-	"""The read_result is something like (0, '100.000000\r\n'), so we slice out the number."""
-	quote_index = read_result.find("'")
-	slash_index = read_result.find("\\", start=quote_index)
-	return read_result[quote_index + 1:slash_index]
-
-
 class BacnetControl:
 	def __init__(self, bin_dir_path, bacnet_port=47809):
 		self.bin_dir_path = bin_dir_path
 		self.bacnet_port = bacnet_port
 	def run_command(self, args):
 		os.environ['BACNET_IP_PORT'] = '%s' % self.bacnet_port
-		proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=self.bin_dir_path)
+		#args = ['/var/www/Art-Server/art_server/bacnet_bins/bacrp 77000 2 1 85'] #[' '.join(args)]
+		proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.bin_dir_path)
 		output = ''
-		while True:
-			next_line = proc.stdout.readline()
-			if next_line == '' and proc.poll() != None: break
-			output = '%s%s' % (output, next_line)
+		for line in proc.stdout:
+			#if line == '' and proc.poll() != None: break
+			output = '%s%s' % (output, line)
+		err_output = ''
+		for line in proc.stderr:
+			err_output = '%s%s' % (err_output, line)	
 		proc.wait()
-		return (proc.returncode, output)
+		return (proc.returncode, output, err_output)
 
 	def get_bin_path(self, bin_name):
 		bin_name = '%s%s' % (bin_name, settings.BACNET_EXECUTABLE_EXTENSION)
@@ -45,7 +41,7 @@ class BacnetControl:
 		"""Returns the Present-Value of an Analog Output property"""
 		bin_path = self.get_bin_path('bacrp')
 		# bacrp device-instance object-type object-instance property [index]
-		# bacrp 100 1 23 1 85
+		# bacrp 100 2 23 1 85
 		args = [bin_path, '%s' % int(device_id), '2', '%s' % int(property_id), '85']
 		return self.run_command(args)
 
@@ -53,7 +49,9 @@ class BacnetControl:
 		"""Returns the Present-Value of an Analog Output property"""
 		bin_path = self.get_bin_path('bacwp')
 		# bacwp device-instance object-type object-instance property priority index tag value [tag value...]
-		args = [bin_path, '%s' % int(device_id), '2', '%s' % int(property_id), '85', '16', '-1', '2', '%s' % int(value)]
+		# bacwp 77000 2 1 85 0 -1 4 99.0
+		args = [bin_path, '%s' % int(device_id), '2', '%s' % int(property_id), '85', '0', '-1', '4', '%s' % value]
+		print args
 		return self.run_command(args)
 
 def main():
@@ -74,7 +72,7 @@ def main():
 		except IndexError:
 			print USAGE_MESSAGE
 			return
-		control.write_analog_output_int(device_id, property_id, value)
+		print control.write_analog_output_int(device_id, property_id, value)
 	else:
 		print USAGE_MESSAGE
 		return
