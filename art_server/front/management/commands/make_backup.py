@@ -18,6 +18,7 @@ class Command(BaseCommand):
 		return os.system(command) == 0
 	
 	def handle(self, *labels, **options):
+		if settings.DATABASE_ENGINE != 'postgresql_psycopg2': raise CommandError('This command only works with PostgreSQL')
 		if not hasattr(settings, 'DYNAMIC_MEDIA_DIRS'): raise CommandError('You must define DYNAMIC_MEDIA_DIRS in settings.py')
 		for dir_path in settings.DYNAMIC_MEDIA_DIRS:
 			if not os.path.exists(os.path.join(settings.MEDIA_ROOT, dir_path)): raise CommandError('Specified dynamic media directory "%s" does not exist.' % dir_path)

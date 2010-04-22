@@ -20,6 +20,7 @@ class Command(BaseCommand):
 		return os.system(command) == 0
 
 	def handle(self, *labels, **options):
+		if settings.DATABASE_ENGINE != 'postgresql_psycopg2': raise CommandError('This command only works with PostgreSQL')
 		if not labels or len(labels) != 1: raise CommandError('Enter one argument, the path to the backup tar file.')
 		backup_path = os.path.realpath(labels[0])
 		if not os.path.exists(backup_path): raise CommandError('The backup file "%s" does not exist.' % backup_path)
