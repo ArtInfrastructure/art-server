@@ -1,37 +1,37 @@
 
-h2. What this project includes
+# What this project includes
 
-h3. front
+### front
 
 The templates, models, and views for web application to be run inside the firewall of your art installation network.
 
-h3. airport
+### airport
 
 An application and API for saving XML based data snapshots (used by the developers to store flight info).
 
-h3. artcam
+### artcam
 
 A UI and API for periodic snapshots of web cams in your installation environment.
 
-h3. flock
+### flock
 
 A UI and API for monitoring and triggering state changes on various computers which drive art.
 
-h3. iboot
+### iboot
 
 A control library and control UI for the iBoot series of network controllable power strips.
 
-h3. incus
+### incus
 
 A (fetal, incomplete) API and control UI for AB64 audio servers.
 
-h3. lighting
+### lighting
 
 A BACnet control library and a UI+API for controlling BMS lighting systems.
 
 A PJLink control library and a UI+API for controlling networked projectors.
 
-h2. Installation
+## Installation
 
 If you don't already have pip, go get and install it: http://pypi.python.org/pypi/pip
 
