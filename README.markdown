@@ -3,7 +3,7 @@
 
 ### front
 
-The templates, models, and views for web application to be run inside the firewall of your art installation network.
+The templates, models, and views for a web application to be run inside the firewall of your art installation network.
 
 ### airport
 
