@@ -9,3 +9,4 @@ devel_settings.py
 media/resized_image/*
 media/artcam_photo/*
 bacnet_bins
+pip-log.txt
