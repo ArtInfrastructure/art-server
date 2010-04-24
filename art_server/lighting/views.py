@@ -45,12 +45,12 @@ def bacnet_light(request, id):
 		if light_control_form.is_valid():
 			new_value = light_control_form.cleaned_data['light_value']
 			try:
-				control.write_analog_output_int(light.device_id, light.property_id, int(new_value))
+				control.write_analog_output_int(light.device_id, light.property_id, new_value)
 			except:
 				logging.exception('Could not write the posted value (%s) for bacnet device %s property %s' % (new_value, light.device_id, light.property_id))
 				return HttpResponseServerError('Could not write the posted value (%s) for bacnet device %s property %s\n\n%s' % (new_value, light.device_id, light.property_id, sys.exc_info()[1]))
 	try:
-		light_value = control.read_analog_output(light.device_id, light.property_id)
+		light_value = control.read_analog_output(light.device_id, light.property_id)[1]
 		light_control_form = LightControlForm(data={'light_value':light_value})
 	except:
 		logging.exception('Could not read the analog output for bacnet device %s property %s' % (light.device_id, light.property_id))
