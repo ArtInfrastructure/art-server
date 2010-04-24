@@ -26,6 +26,8 @@ from django.template.loader import render_to_string
 from django.utils import feedgenerator
 
 from bacnet_control import BacnetControl
+from pjlink import PJLinkController, PJLinkProtocol
+from api_views import ProjectorInfo, LampInfo
 
 from models import *
 from forms import *
@@ -59,4 +61,18 @@ def bacnet_light(request, id):
 @staff_member_required
 def projector(request, id):
 	projector = get_object_or_404(Projector, pk=id)
-	return render_to_response('lighting/projector.html', { 'projector':projector }, context_instance=RequestContext(request))
+	controller = PJLinkController(projector.pjlink_host, projector.pjlink_port, projector.pjlink_password)
+	try:
+		if request.method == 'POST':
+			if request.POST.get('power', None) == PJLinkProtocol.POWER_ON_STATUS:
+				controller.power_on()
+			elif request.POST.get('power', None) == PJLinkProtocol.POWER_OFF_STATUS:
+				controller.power_off()
+
+		info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info())
+		for lamp in controller.query_lamps(): info.lamps.append(LampInfo(lamp[0], lamp[1]))
+	except:
+		logging.exception('Could not communicate with the projector')
+		info = None
+
+	return render_to_response('lighting/projector.html', { 'projector':projector, 'projector_info':info }, context_instance=RequestContext(request))

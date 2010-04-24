@@ -95,7 +95,7 @@ class PJLinkAuthenticationRequest:
 	def decode(cls, encoded_request):
 		tokens = encoded_request.split(' ')
 		if tokens[1] == PJLinkProtocol.ON:
-			return PJLinkAuthenticationRequest(seed=tokens[2])
+			return PJLinkAuthenticationRequest(seed=tokens[2].strip())
 		else:
 			return PJLinkAuthenticationRequest()
 
@@ -103,7 +103,7 @@ class PJLinkAuthenticationRequest:
 	def generate_hash(cls, seed, password):
 		import random, hashlib
 		m = hashlib.md5()
-		m.update('%s %s' % (seed, password))
+		m.update('%s%s' % (seed, password))
 		return m.hexdigest()
 
 	@classmethod
@@ -257,7 +257,6 @@ class PJLinkController:
 		sock.settimeout(15)
 		sock.connect((self.host, self.port))
 		encoded_auth_request = sock.recv(512)
-		#print '\n\nauth request', encoded_auth_request
 		auth_request = PJLinkAuthenticationRequest.decode(encoded_auth_request)
 		if auth_request.seed:
 			if self.password:

@@ -13,6 +13,48 @@
 	<tr><th>PJLink host/port:</th><td>{{ projector.pjlink_host}}/{{ projector.pjlink_port }}</td></tr>
 </table>
 
+{% if projector_info %}
+<h2>Information from projector:</h2>
+<table>
+   <tr>
+      <th>Projector name</th>
+      <td>{{ projector_info.projector_name }}</td>
+   </tr>
+   <tr>
+      <th>Power State</th>
+      <td>
+         {% ifequal projector_info.power_state '0' %}Off{% endifequal %}
+         {% ifequal projector_info.power_state '1' %}On{% endifequal %}
+         {% ifequal projector_info.power_state '2' %}Cooling{% endifequal %}
+         {% ifequal projector_info.power_state '3' %}Warmup{% endifequal %}
+         ({{ projector_info.power_state }})
+      </td>
+   </tr>
+   <tr>
+      <th>Manufacture Name</th>
+      <td>{{ projector_info.manufacture_name }}</td>
+   </tr>
+   {% if projector_info.other_info %}
+   <tr>
+      <th>Other info</th>
+      <td>{{ projector_info.other_info }}</td>
+   </tr>
+   {% endif %}
+   <tr>
+      <th>Product name</th>
+      <td>{{ projector_info.product_name }}</td>
+   </tr>
+   {% for lamp in projector_info.lamps %}
+   <tr>
+      <th>Lamp</th>
+      <td>{% ifequal lamp.is_on "True" %}ON{% else %}OFF{% endifequal %}, total hours {{ lamp.lighting_hours }}</td>
+   </tr>
+   {% endfor %}
+</table>
+{% else %}
+   <p>Unable to fetch the projector info.</p>
+{% endif %}
+
 {% endblock %}
 
 /* Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */
