@@ -276,18 +276,19 @@ class PJLinkController:
 			raise PJLinkAuthenticationException('The projector rejected our password')
 		return response
 
-USAGE_MESSAGE = 'usage: pjlink [projector]'
+USAGE_MESSAGE = 'usage: pjlink [projector|name] <host> <password>'
 
 def main():
-	from django.core.management import setup_environ
-	import settings
-	setup_environ(settings)
 	try:
 		action = sys.argv[1]
 	except IndexError:
 		print USAGE_MESSAGE
 		return
-	if action == 'projector':
+	if action == 'name':
+		host = sys.argv[2]
+		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
+		print controller.query_name()
+	elif action == 'projector':
 		from tests.test_lighting import MockPJLinkProjector
 		projector = MockPJLinkProjector()
 		projector.port = 4352
