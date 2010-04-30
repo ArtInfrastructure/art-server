@@ -12,8 +12,8 @@ class PJLinkProtocol:
 	ON = "1"
 	OFF = "0"
 	QUERY = "?"
-	VIDEO_MUTE_ON = "11"
-	VIDEO_MUTE_OFF = "10"
+	VIDEO_MUTE_ON = "31"
+	VIDEO_MUTE_OFF = "30"
 	AUDIO_MUTE_ON = "21"
 	AUDIO_MUTE_OFF = "20"
 	AUDIO_VIDEO_MUTE_ON = "31"
@@ -276,7 +276,7 @@ class PJLinkController:
 			raise PJLinkAuthenticationException('The projector rejected our password')
 		return response
 
-USAGE_MESSAGE = 'usage: pjlink [projector|name] <host> <password>'
+USAGE_MESSAGE = 'usage: pjlink [projector|name|on|off|mute|unmute|mute-status] <host> <password>'
 
 def main():
 	try:
@@ -285,9 +285,26 @@ def main():
 		print USAGE_MESSAGE
 		return
 	if action == 'name':
-		host = sys.argv[2]
 		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
 		print controller.query_name()
+	elif action == 'off':
+		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
+		controller.power_off()
+	elif action == 'on':
+		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
+		controller.power_on()
+	elif action == 'status':
+		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
+		print controller.query_power()
+	elif action == 'mute':
+		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
+		print controller.set_mute(PJLinkProtocol.VIDEO_MUTE_ON)
+	elif action == 'unmute':
+		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
+		print controller.set_mute(PJLinkProtocol.VIDEO_MUTE_OFF)
+	elif action == 'mute-status':
+		controller = PJLinkController(host=sys.argv[2], password=sys.argv[3])
+		print "(audio is muted, video is muted): (%s, %s)"  % controller.query_mute()
 	elif action == 'projector':
 		from tests.test_lighting import MockPJLinkProjector
 		projector = MockPJLinkProjector()

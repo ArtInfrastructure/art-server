@@ -69,7 +69,9 @@ def projector(request, id):
 			elif request.POST.get('power', None) == PJLinkProtocol.POWER_OFF_STATUS:
 				controller.power_off()
 
-		info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info())
+		audio_mute, video_mute = controller.query_mute()
+		print audio_mute, video_mute
+		info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info(), audio_mute, video_mute)
 		for lamp in controller.query_lamps(): info.lamps.append(LampInfo(lamp[0], lamp[1]))
 	except:
 		logging.exception('Could not communicate with the projector')

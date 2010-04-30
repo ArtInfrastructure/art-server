@@ -44,6 +44,13 @@
       <th>Product name</th>
       <td>{{ projector_info.product_name }}</td>
    </tr>
+   <tr>
+      <th>Mute</th>
+      <td>
+         {% ifnotequal projector_info.audio_mute None %}Audio muted: {{ projector_info.audio_mute }},{% endifnotequal %}
+         {% ifnotequal projector_info.video_mute None %}Video muted: {{ projector_info.video_mute }}{% endifnotequal %}
+      </td>
+   </tr>
    {% for lamp in projector_info.lamps %}
    <tr>
       <th>Lamp</th>

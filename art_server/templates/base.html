@@ -33,7 +33,6 @@
 			<a href="{% url lighting.views.index %}">lighting</a> |
 			<a href="{% url artcam.views.index %}">art cams</a> |
 			<a href="{% url iboot.views.index %}">power</a> |
-			<a href="{% url incus.views.index %}">audio manager</a> |
 		{% endif %}
 		{% if request.user.is_authenticated %}
 			<a href="{% url django.contrib.auth.views.logout_then_login %}">logout</a>

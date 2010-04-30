@@ -74,15 +74,17 @@ class LampInfo:
 
 class ProjectorInfo:
 	"""Used to wrap the projector information for dehydration"""
-	def __init__(self, power_state, projector_name, manufacture_name, product_name, other_info):
+	def __init__(self, power_state, projector_name, manufacture_name, product_name, other_info, audio_mute, video_mute):
 		self.power_state = power_state
 		self.projector_name = projector_name
 		self.manufacture_name = manufacture_name
 		self.product_name = product_name
 		self.other_info = other_info
+		self.video_mute = video_mute
+		self.audio_mute = audio_mute
 		self.lamps = []
 	class HydrationMeta:
-		attributes = ['power_state', 'projector_name', 'manufacture_name', 'product_name', 'other_info']
+		attributes = ['power_state', 'projector_name', 'manufacture_name', 'product_name', 'other_info', 'audio_mute', 'video_mute']
 		nodes = ['lamps']
 
 def projector_info(request, id):
@@ -94,8 +96,8 @@ def projector_info(request, id):
 			controller.power_on()
 		elif request.POST.get('power', None) == PJLinkProtocol.POWER_OFF_STATUS:
 			controller.power_off()
-
-	info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info())
+	audio_mute, video_mute = controller.query_mute()
+	info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info(), audio_mute, video_mute)
 	for lamp in controller.query_lamps():
 		info.lamps.append(LampInfo(lamp[0], lamp[1]))
 	return HttpResponse(dehydrate_to_xml(info), content_type="text/xml")
