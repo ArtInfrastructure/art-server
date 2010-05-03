@@ -90,12 +90,21 @@ class ProjectorInfo:
 def projector_info(request, id):
 	projector = get_object_or_404(Projector, pk=id)
 	controller = PJLinkController(projector.pjlink_host, projector.pjlink_port, projector.pjlink_password)
+	try:
+		if request.method == 'POST':
+			if request.POST.get('power', None) == PJLinkProtocol.POWER_ON_STATUS:
+				controller.power_on()
+			elif request.POST.get('power', None) == PJLinkProtocol.POWER_OFF_STATUS:
+				controller.power_off()
 
-	if request.method == 'POST':
-		if request.POST.get('power', None) == PJLinkProtocol.POWER_ON_STATUS:
-			controller.power_on()
-		elif request.POST.get('power', None) == PJLinkProtocol.POWER_OFF_STATUS:
-			controller.power_off()
+			if request.POST.get('mute', None) == PJLinkProtocol.ON:
+				controller.set_mute(PJLinkProtocol.VIDEO_MUTE_ON)
+				print 'set mute'
+			elif request.POST.get('mute', None) == PJLinkProtocol.OFF:
+				controller.set_mute(PJLinkProtocol.VIDEO_MUTE_OFF)
+				print 'set unmute'
+	except:
+		logging.exception('Could not control the projector')
 	audio_mute, video_mute = controller.query_mute()
 	info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info(), audio_mute, video_mute)
 	for lamp in controller.query_lamps():
