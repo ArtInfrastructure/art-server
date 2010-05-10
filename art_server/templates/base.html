@@ -5,6 +5,17 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<title>{% block title %}{% block sub-title %}{% endblock %}{{ site.name }}{% endblock %}</title>
 
+	<script type="text/javascript">
+	// If there is no console, ignore console logging
+	if(!window.console){
+	    var names = ["log", "debug", "info", "warn", "error", "assert", "dir", "dirxml", "group", "groupEnd", "time", "timeEnd", "count", "trace", "profile", "profileEnd"];
+	    window.console = {};
+	    for (var i = 0; i < names.length; ++i){ 
+	        window.console[names[i]] = function() {}
+	    }
+	}
+	</script>
+
 	<!-- jquery resources -->
 	<link rel="stylesheet" type="text/css" href="/media/jquery/css/smoothness/jquery-ui-1.7.1.custom.css" />
 	<script type="text/javascript" src="/media/jquery/js/jquery-1.3.2.min.js"></script>

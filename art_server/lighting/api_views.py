@@ -99,10 +99,8 @@ def projector_info(request, id):
 
 			if request.POST.get('mute', None) == PJLinkProtocol.ON:
 				controller.set_mute(PJLinkProtocol.VIDEO_MUTE_ON)
-				print 'set mute'
 			elif request.POST.get('mute', None) == PJLinkProtocol.OFF:
 				controller.set_mute(PJLinkProtocol.VIDEO_MUTE_OFF)
-				print 'set unmute'
 	except:
 		logging.exception('Could not control the projector')
 	audio_mute, video_mute = controller.query_mute()
