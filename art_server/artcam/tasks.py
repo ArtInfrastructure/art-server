@@ -16,7 +16,6 @@ class ArtcamTask(Task):
 		for artcam in Artcam.objects.all():
 			try:
 				artcam.update_photo()
-				print "updated photo"
 			except:
 				print 'error in artcam task: '
 				self.send_alert("ArtCam Failure: %s" % artcam, "Could not update %s: %s %s" % (artcam, sys.exc_info()[0], sys.exc_info()[1]))
