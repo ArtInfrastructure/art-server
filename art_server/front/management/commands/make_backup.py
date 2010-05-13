@@ -28,7 +28,7 @@ class Command(BaseCommand):
 	def handle(self, *labels, **options):
 		upload = options['upload']
 		nofiles = options['nofiles']
-		
+		print upload
 		if settings.DATABASE_ENGINE != 'postgresql_psycopg2': raise CommandError('This command only works with PostgreSQL')
 		if not hasattr(settings, 'DYNAMIC_MEDIA_DIRS'): raise CommandError('You must define DYNAMIC_MEDIA_DIRS in settings.py')
 		for dir_path in settings.DYNAMIC_MEDIA_DIRS:
@@ -78,12 +78,13 @@ class Command(BaseCommand):
 			command = 'rm -f "%s" "%s"' % (media_path, sql_path)
 		if not self.call_system(command): print 'Could not erase temp backup files'
 
-		source_path = os.path.join(settings.BACKUP_ROOT, backup_file)
-		if not os.path.exists(source_path): raise CommandError('Backup file does not exist: %s' % source_path)
-		s3_connection = S3Connection(settings.AWS_ACCESS_KEY, settings.AWS_SECRET_KEY)
-		bucket = s3_connection.lookup(settings.BACKUP_S3_BUCKET)
-		if bucket == None:
-			bucket = s3_connection.create_bucket(settings.BACKUP_S3_BUCKET)
-		k = Key(bucket)
-		k.key = os.path.basename(source_path)
-		k.set_contents_from_filename(source_path)
+		if upload:
+			source_path = os.path.join(settings.BACKUP_ROOT, backup_file)
+			if not os.path.exists(source_path): raise CommandError('Backup file does not exist: %s' % source_path)
+			s3_connection = S3Connection(settings.AWS_ACCESS_KEY, settings.AWS_SECRET_KEY)
+			bucket = s3_connection.lookup(settings.BACKUP_S3_BUCKET)
+			if bucket == None:
+				bucket = s3_connection.create_bucket(settings.BACKUP_S3_BUCKET)
+			k = Key(bucket)
+			k.key = os.path.basename(source_path)
+			k.set_contents_from_filename(source_path)
