@@ -23,6 +23,10 @@ ARTCAM_PUBLIC_PASSWORD = 'pass'
 ALERT_SECRET = 'some secret stored in an Alert Permission object on the art cloud'
 ALERT_API_URL = 'http://art cloud host here/api/alert/'
 
+AWS_ACCESS_KEY = 'access key'
+AWS_SECRET_KEY = 'secret key'
+BACKUP_S3_BUCKET = 'unique_bucket_name'
+
 PRODUCTION = True
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
