@@ -39,6 +39,11 @@ class Snapshot:
 def explorer(request):
 	return render_to_response('airport/explorer.html', { }, context_instance=RequestContext(request))
 
+def fid(request):
+	snap = AirportSnapshot.objects.latest()
+	if snap == None: raise Http404
+	return render_to_response('airport/fid.html', { 'snap':snap }, context_instance=RequestContext(request))
+
 def snapshot_list(request):
 	"""A list of all available snapshots"""
 	if request.method == "POST":

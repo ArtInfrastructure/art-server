@@ -7,4 +7,5 @@ from models import *
 urlpatterns = patterns('',
 	# the URLs for the snapshot and snapshot list are in art_server.urls
 	(r'^explorer/$', 'airport.views.explorer'),
+	(r'^fid/$', 'airport.views.fid'),
 )

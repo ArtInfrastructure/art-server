@@ -26,11 +26,49 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_unicode
 from django.db.models import Q
 
+from lxml import etree
+
 class AirportSnapshotManager(models.Manager):
 	def latest(self):
 		snaps = self.all()[:1]
 		if len(snaps) == 1: return snaps[0]
 		return None
+
+class FlightLeg:
+	def __init__(self, fl_element):
+		self.fl_element = fl_element
+		self.update_time = self.get_attribute('.', 'update-time')
+		self.stopover_index = self.get_attribute('Stopover', 'elementIndex')
+		self.carrier = self.get_value('./FlightID/Carrier')
+		self.flight_number = self.get_value('./FlightID/FlightNumber')
+		self.scheduled_date_time = self.get_value('./FlightID/ScheduledDateTime')
+		self.in_outbound = self.get_value('./FlightID/InOutbound')
+		self.origin_destination_airport_code = self.get_value('./FlightID/OriginDestinationAirportCode')
+		self.ac_type_code = self.get_value('./ACTypeCode')
+		self.public_gate = self.get_value('./PublicGate')
+		self.stand = self.get_value('./Stand')
+		self.estimated = self.get_value('./Estimated')
+		self.public_comment = self.get_value('./PublicComment')
+		self.flight_status = self.get_value('./FlightStatus')
+		self.gate_name = self.get_value('./GateInfo/GateName')
+		self.sched_begin = self.get_value('./GateInfo/SchedBegin')
+		self.sched_end = self.get_value('./GateInfo/SchedEnd')
+		self.actual_begin = self.get_value('./GateInfo/ActualBegin')
+		self.actual_end = self.get_value('./GateInfo/ActualEnd')
+		self.bag_claim_name = self.get_value('./BagClaim/BagClaimName')
+		self.bag_claim_status = self.get_value('./BagClaim/BagClaimStatus')
+
+	def get_attribute(self, xPath, attribute_name, default=None):
+		elements = self.fl_element.xpath(xPath)
+		if len(elements) == 0: return default
+		return elements[0].attrib.get(attribute_name)
+	
+	def get_value(self, xPath, default=None):
+		elements = self.fl_element.xpath(xPath)
+		if len(elements) == 0: return default
+		return elements[0].text
+
+	def __repr__(self): return "FlightLeg: %s %s" % (self.carrier, self.flight_number)
 
 class AirportSnapshot(models.Model):
 	"""An XML formatted snapshot of data from the airport."""
@@ -39,6 +77,11 @@ class AirportSnapshot(models.Model):
 
 	objects = AirportSnapshotManager()
 
+	@property
+	def flight_legs(self):
+		root = etree.fromstring(self.xml_data)
+		return sorted([FlightLeg(fl_element) for fl_element in root.xpath('//FlightLeg')], key=lambda fl: fl.scheduled_date_time)
+				
 	def __unicode__(self): return 'Snapshot %s' % self.created
 	@models.permalink
 	def get_absolute_url(self):
