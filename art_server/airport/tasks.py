@@ -43,8 +43,8 @@ class FileMungerTask(Task):
 			flightleg_elements = element.xpath('//FlightLeg')
 			for flightleg_element in flightleg_elements:
 				flightleg_element.set('update-time', time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(mdate)))
-				carrier = flightleg_element.xpath('//Carrier')[0].text
-				flight_number = flightleg_element.xpath('//FlightNumber')[0].text
+				carrier = flightleg_element.xpath('./FlightID/Carrier')[0].text
+				flight_number = flightleg_element.xpath('./FlightID/FlightNumber')[0].text
 				result_elements[(carrier, flight_number)] = flightleg_element
 		
 		if youngest_mdate < int(time.time()) - 10800: # if there are not updates in three hours, send an alert
@@ -68,7 +68,7 @@ class FileMungerTask(Task):
 			self.send_alert('No airport snapshots', 'After running the munger task there were no airport snapshots.')
 		elif old_snapshots[0].created < datetime.datetime.now() - datetime.timedelta(hours=1):
 			self.send_alert('Airport snapshots are old', 'After running the munger task there were no snapshots in the last hour')
-		
+
 	def files_to_munge(self):
 		"""Returns an array of info about files in the form (creation_date, path), sorted in chronological order by modified date"""
 		entries = (os.path.join(FILE_MUNGER_DIRECTORY, fn) for fn in os.listdir(FILE_MUNGER_DIRECTORY))
