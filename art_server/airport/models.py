@@ -35,6 +35,8 @@ class AirportSnapshotManager(models.Manager):
 		return None
 
 class FlightLeg:
+	TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
 	def __init__(self, fl_element):
 		self.fl_element = fl_element
 		self.update_time = self.get_attribute('.', 'update-time')
@@ -57,6 +59,11 @@ class FlightLeg:
 		self.actual_end = self.get_value('./GateInfo/ActualEnd')
 		self.bag_claim_name = self.get_value('./BagClaim/BagClaimName')
 		self.bag_claim_status = self.get_value('./BagClaim/BagClaimStatus')
+	
+	@property
+	def upcoming(self):
+		if self.sched_begin == None: return False
+		return datetime.datetime.strptime(self.sched_begin, self.TIMESTAMP_FORMAT) < datetime.datetime.now()
 
 	def get_attribute(self, xPath, attribute_name, default=None):
 		elements = self.fl_element.xpath(xPath)
