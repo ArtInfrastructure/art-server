@@ -44,6 +44,7 @@ class FlightLeg:
 		self.carrier = self.get_value('./FlightID/Carrier')
 		self.flight_number = self.get_value('./FlightID/FlightNumber')
 		self.scheduled_date_time = self.get_value('./FlightID/ScheduledDateTime')
+		self.estimated = self.get_value('./Estimated')
 		self.in_outbound = self.get_value('./FlightID/InOutbound')
 		self.origin_destination_airport_code = self.get_value('./FlightID/OriginDestinationAirportCode')
 		self.ac_type_code = self.get_value('./ACTypeCode')
