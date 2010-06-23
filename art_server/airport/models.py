@@ -63,8 +63,8 @@ class FlightLeg:
 	
 	@property
 	def upcoming(self):
-		if self.sched_begin == None: return False
-		return datetime.datetime.strptime(self.sched_begin, self.TIMESTAMP_FORMAT) < datetime.datetime.now()
+		if self.sched_end == None: return False
+		return datetime.datetime(*(time.strptime(self.sched_end, self.TIMESTAMP_FORMAT)[0:6])) > datetime.datetime.now()
 
 	def get_attribute(self, xPath, attribute_name, default=None):
 		elements = self.fl_element.xpath(xPath)

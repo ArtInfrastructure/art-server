@@ -5,7 +5,8 @@
 {% block style %}
 #content table { width: 100%; }
 #content th { text-align: left; font-weight: bold; }
-.upcoming { color: #777; }
+.past { color: #777; }
+.target-claim { border: solid 1px #F88; }
 {% endblock %}
 
 {% block sub-head %}
@@ -20,7 +21,7 @@
 <table>
 	<tr><th>Origin:</th><th>Carrier:</th><th>Flight:</th><th>Scheduled Time:</th><th>Estimated Time:</th><th>Comment:</th><th>Stand:</th><th>Bag Claim:</th></tr>
 {% for leg in snap.flight_legs reversed %}
-	<tr class="{% cycle 'even-row' 'odd-row' %}{% if leg.upcoming %} upcoming{% endif %}">
+	<tr class="{% cycle 'even-row' 'odd-row' %}{% if not leg.upcoming %} past{% endif %}{% ifequal leg.bag_claim_name 'B2' %} target-claim{% endifequal %}">
 		<td>{{ leg.origin_destination_airport_code }}</td>
 		<td>{{ leg.carrier}}</td>
 		<td>{{ leg.flight_number }}</td>
