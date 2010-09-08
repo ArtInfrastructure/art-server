@@ -70,7 +70,6 @@ def projector(request, id):
 				controller.power_off()
 
 		audio_mute, video_mute = controller.query_mute()
-		print audio_mute, video_mute
 		info = ProjectorInfo(controller.query_power(), controller.query_name(), controller.query_manufacture_name(), controller.query_product_name(), controller.query_other_info(), audio_mute, video_mute)
 		for lamp in controller.query_lamps(): info.lamps.append(LampInfo(lamp[0], lamp[1]))
 	except:
