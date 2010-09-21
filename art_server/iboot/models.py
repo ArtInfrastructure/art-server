@@ -29,6 +29,7 @@ from django.db.models.fields.files import ImageFieldFile
 from django.core.urlresolvers import reverse
 
 from front.models import EventModel
+from iboot_control import IBootControl
 
 class IBootDevice(models.Model):
 	name = models.CharField(max_length=1024, null=False, blank=False)
@@ -48,6 +49,36 @@ class IBootEvent(EventModel):
 	COMMAND_CHOICES = (('cycle', 'Cycle'), ('on', 'Turn On'), ('off', 'Turn Off'), ('toggle', 'Toggle') )
 	command = models.CharField(max_length=12, blank=False, null=False, choices=COMMAND_CHOICES, default='cycle')
 	device = models.ForeignKey(IBootDevice, blank=False, null=False)
+
+	def execute(self):
+		try:
+			control = IBootControl(settings.IBOOT_POWER_PASSWORD, self.device.ip)
+			print 'running ', self
+			if self.command == 'cycle':
+				control.cycle_power()
+			elif self.command == 'on':
+				control.turn_on()
+			elif self.command == 'off':
+				control.turn_off()
+			elif self.command == 'toggle':
+				control.toggle()
+			else:
+				self.tries = self.tries + 1
+				self.save()
+				return False
+			print 'ran command', self.command
+		except:
+			traceback.print_exc()
+			self.tries = self.tries + 1
+			self.save()
+			return False
+			
+		self.last_run = datetime.datetime.now()
+		self.tries = 1
+		self.save()
+		return True
+
+	def __unicode__(self): return 'iBoot Event: [%s],[%s],[%s]' % (self.days, self.hours, self.minutes)
 
 	class Meta:
 		verbose_name = 'iBoot Event'

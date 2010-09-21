@@ -35,6 +35,12 @@ class EventTest(TestCase):
 		event.hours = '13,20'
 		event.minutes = '12'
 		
+		self.assertEqual(event.last_run, None)
+		self.assertFalse(event.due_for_execution(datetime(2010, 9, 21, 14, 0)))
+		self.assertTrue(event.due_for_execution(datetime(2010, 9, 21, 13, 13)))
+		event.last_run = datetime.now()
+		self.assertFalse(event.due_for_execution(datetime(2010, 9, 21, 13, 13)))
+		
 		self.assertEqual(event.latest_scheduled_time(datetime(2010, 9, 21, 13, 25)), datetime(2010, 9, 21, 13, 12))
 
 		self.assertEqual(event.latest_scheduled_time(datetime(2010, 9, 21, 21, 0)), datetime(2010, 9, 21, 20, 12))
@@ -47,4 +53,22 @@ class EventTest(TestCase):
 
 		event.minutes = None
 		self.assertEqual(event.latest_scheduled_time(datetime(2010, 9, 21, 12, 19)), datetime(2010, 9, 16, 20, 0))
+
+		event.days = None
+		event.hours = None
+		event.minutes = None
+		self.assertEqual(event.latest_scheduled_time(datetime(2010, 9, 21, 12, 19)), None)
+
+		event.days = None
+		event.hours = '13,20'
+		event.minutes = '12'
+		event.last_run = None
+		self.assertTrue(event.due_for_execution(datetime(2010, 9, 21, 13, 13)))
+
+		event.days = None
+		event.hours = None
+		event.minutes = '12'
+		event.last_run = None
+		self.assertTrue(event.due_for_execution(datetime(2010, 9, 21, 13, 13)))
+		self.assertTrue(event.due_for_execution(datetime(2010, 9, 21, 1, 13)))
 

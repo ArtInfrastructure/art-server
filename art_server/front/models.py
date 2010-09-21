@@ -47,6 +47,15 @@ class EventModel(models.Model):
 	last_run = models.DateTimeField(blank=True, null=True)
 	tries = models.IntegerField(blank=False, null=False, default=0)
 
+	def due_for_execution(self, timestamp=None, window_minutes=10):
+		"""Returns True if this event should be run now or using the timestamp if it is not None."""
+		if not self.active: return False
+		if not timestamp: timestamp = datetime.datetime.now()
+		last_time = self.latest_scheduled_time()
+		if not last_time: return False
+		if self.last_run and self.last_run > last_time: return False
+		return last_time > timestamp - datetime.timedelta(minutes=window_minutes)
+
 	def save(self, *args, **kwargs):
 		self.days = clean_int_field(self.days)
 		self.hours = clean_int_field(self.hours)
@@ -61,6 +70,9 @@ class EventModel(models.Model):
 		"""Returns a datetime for this event's scheduled time most close to but before the current time or timestamp if it's not None"""
 		if not timestamp: timestamp = datetime.datetime.now()
 		days, hours, minutes = self.to_arrays()
+
+		if not days and not hours and not minutes: return None
+
 		if not days: days = range(0,7)
 		if not hours: hours = range(0,24)
 		if not minutes: minutes = [0]
