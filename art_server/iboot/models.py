@@ -28,6 +28,8 @@ from django.db.models import Q
 from django.db.models.fields.files import ImageFieldFile
 from django.core.urlresolvers import reverse
 
+from front.models import EventModel
+
 class IBootDevice(models.Model):
 	name = models.CharField(max_length=1024, null=False, blank=False)
 	mac_address = models.CharField(max_length=1024, null=False, blank=False, help_text="e.g. 00-0D-AD-01-94-6F")
@@ -42,3 +44,11 @@ class IBootDevice(models.Model):
 	class HydrationMeta:
 		attributes = ['id', 'name', 'mac_address']
 
+class IBootEvent(EventModel):
+	COMMAND_CHOICES = (('cycle', 'Cycle'), ('on', 'Turn On'), ('off', 'Turn Off'), ('toggle', 'Toggle') )
+	command = models.CharField(max_length=12, blank=False, null=False, choices=COMMAND_CHOICES, default='cycle')
+	device = models.ForeignKey(IBootDevice, blank=False, null=False)
+
+	class Meta:
+		verbose_name = 'iBoot Event'
+		verbose_name_plural = 'iBoot Events'

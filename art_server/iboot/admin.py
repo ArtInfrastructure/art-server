@@ -13,3 +13,7 @@ class StyledModelAdmin(admin.ModelAdmin):
 class IBootDeviceAdmin(StyledModelAdmin):
 	list_display = ('name', 'mac_address', 'ip')
 admin.site.register(IBootDevice, IBootDeviceAdmin)	
+
+class IBootEventAdmin(StyledModelAdmin):
+	pass
+admin.site.register(IBootEvent, IBootEventAdmin)	

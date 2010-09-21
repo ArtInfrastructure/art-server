@@ -28,6 +28,8 @@ from django.db.models import Q
 from django.db.models.fields.files import ImageFieldFile
 from django.core.urlresolvers import reverse
 
+from front.models import EventModel
+
 class BACNetLight(models.Model):
 	"""A lighting fixture which is controlled using the BACNet protocols.
 	In BACNet speak: we're reading and writing Present-Value on Analog Outputs which range in value from 0 to 100."""
@@ -57,3 +59,8 @@ class Projector(models.Model):
 		ordering = ['name']
 	class HydrationMeta:
 		attributes = ['id', 'name', 'pjlink_host', 'pjlink_port']
+
+class ProjectorEvent(EventModel):
+	COMMAND_CHOICES = (('on', 'Turn On'), ('off', 'Turn Off'))
+	command = models.CharField(max_length=12, blank=False, null=False, choices=COMMAND_CHOICES, default='cycle')
+	device = models.ForeignKey(Projector, blank=False, null=False)
