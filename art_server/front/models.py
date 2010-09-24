@@ -85,7 +85,7 @@ class EventModel(models.Model):
 		"""Returns True if this event should be run now or using the timestamp if it is not None."""
 		if not self.active: return False
 		if not timestamp: timestamp = datetime.datetime.now()
-		last_time = self.latest_scheduled_time()
+		last_time = self.latest_scheduled_time(timestamp)
 		if not last_time: return False
 		if self.last_run and self.last_run > last_time: return False
 		return last_time > timestamp - datetime.timedelta(minutes=window_minutes)
