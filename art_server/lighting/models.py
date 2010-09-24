@@ -29,6 +29,7 @@ from django.db.models.fields.files import ImageFieldFile
 from django.core.urlresolvers import reverse
 
 from front.models import EventModel
+from pjlink import PJLinkController
 
 class BACNetLight(models.Model):
 	"""A lighting fixture which is controlled using the BACNet protocols.
@@ -62,5 +63,31 @@ class Projector(models.Model):
 
 class ProjectorEvent(EventModel):
 	COMMAND_CHOICES = (('on', 'Turn On'), ('off', 'Turn Off'))
-	command = models.CharField(max_length=12, blank=False, null=False, choices=COMMAND_CHOICES, default='cycle')
+	command = models.CharField(max_length=12, blank=False, null=False, choices=COMMAND_CHOICES, default='off')
 	device = models.ForeignKey(Projector, blank=False, null=False)
+
+	def execute(self):
+		print 'running ', self
+		try:
+			controller = PJLinkController(host=self.device.pjlink_host, port=self.device.pjlink_port, password=self.device.pjlink_password)
+			if self.command == 'on':
+				controller.power_on()
+			elif self.command == 'off':
+				controller.power_off()
+			else:
+				self.tries = self.tries + 1
+				self.save()
+				return False
+			print 'ran command', self.command
+		except:
+			traceback.print_exc()
+			self.tries = self.tries + 1
+			self.save()
+			return False
+			
+		self.last_run = datetime.datetime.now()
+		self.tries = 1
+		self.save()
+		return True
+
+	def __unicode__(self): return 'Projector Event: [%s],[%s],[%s]' % (self.days, self.hours, self.minutes)

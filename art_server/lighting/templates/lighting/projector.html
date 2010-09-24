@@ -3,7 +3,21 @@
 {% block sub-title %}{{ projector.name }} | {% endblock %}
 
 {% block style %}
-#content th { padding-right: 10px }
+#content th { padding-right: 10px; }
+{% include "front/event_css.frag" %}
+{% endblock %}
+
+{% block sub-head %}
+<script type="text/javascript">
+
+function showAddEventForm(){ $(".event-form").show(); }
+function hideAddEventForm(){ $(".event-form").hide(); }
+
+function initialize(){
+	hideAddEventForm();
+}
+$(document).ready(function() { initialize(); });
+</script>
 {% endblock %}
 
 {% block content%}
@@ -61,6 +75,33 @@
 {% else %}
    <p>Unable to fetch the projector info.</p>
 {% endif %}
+
+
+<h2>Events:</h2>
+
+<table id="event-table">
+{% if events %}
+	<tr><th>Command</th><th>Time</th><th></th></tr>
+	{% for event in events %}
+		<tr>
+			<td>{{ event.command }}</td>
+			<td>{{ event.time_description }}</td>
+			<td style="padding-left: 3em;">
+				<form method="post" action="."><input type="hidden" name="action" value="delete" /><input type="hidden" name="event_id" value="{{ event.id }}" /><input type="submit" value="delete" /></form>
+			</td>
+		</tr>
+	{% endfor %}
+{% else %}
+	<tr>
+		<td>No events for this projector.</td>
+	</tr>
+{% endif %}
+	<tr>
+		<td><input type="submit" onclick="showAddEventForm(); return false;" value="add event..." /></td>
+	</tr>
+</table>
+	
+{% include "front/event_form.frag" %}
 
 {% endblock %}
 
