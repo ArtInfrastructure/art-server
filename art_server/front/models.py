@@ -44,8 +44,42 @@ class EventModel(models.Model):
 	hours = models.CommaSeparatedIntegerField(max_length=64, blank=True, null=True)
 	minutes = models.CommaSeparatedIntegerField(max_length=120, blank=True, null=True)
 
-	last_run = models.DateTimeField(blank=True, null=True)
-	tries = models.IntegerField(blank=False, null=False, default=0)
+	last_run = models.DateTimeField(blank=True, null=True, editable=False)
+	tries = models.IntegerField(blank=False, null=False, default=0, editable=False)
+
+	def time_description(self):
+		if not self.days:
+			result = 'Every day'
+		else:
+			result = 'Every %s' % ', '.join([self.day_number_to_name(i) for i in to_array(self.days)])
+		hrs = to_array(self.hours)
+		if not hrs:
+			result += ' at every hour'
+		else:
+			if len(hrs) > 1:
+				p = 's'
+			else:
+				p = ''
+			result += ' in the hour%s %s' % (p ,', '.join([str(i) for i in hrs]))
+
+		mins = to_array(self.minutes)
+		if not mins:
+			result += ' at the top of the hour'
+		elif len(mins) > 1:
+			result += ' at these minutes: %s' % ', '.join([str(i) for i in mins])
+		else:
+			result += ' at this minute: %s' % mins[0]
+		return result
+		
+	def day_number_to_name(self, number):
+		if number == 0: return 'Monday'
+		if number == 1: return 'Tuesday'
+		if number == 2: return 'Wednesday'
+		if number == 3: return 'Thursday'
+		if number == 4: return 'Friday'
+		if number == 5: return 'Saturday'
+		if number == 6: return 'Sunday'
+		return 'Unknown'
 
 	def due_for_execution(self, timestamp=None, window_minutes=10):
 		"""Returns True if this event should be run now or using the timestamp if it is not None."""

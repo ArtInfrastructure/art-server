@@ -3,7 +3,38 @@
 {% block sub-title %}{{ iboot.name }} | {% endblock %}
 
 {% block style %}
-#content th { padding-right: 10px }
+#content th { padding-right: 10px; }
+.event-form {
+	border: solid 3px #555; 
+	position: absolute; top: 60px; left: 60px; width: 500px;
+	padding: 10px; 
+	background: #FFF;
+}
+.event-form .close-link { float: right; font-size: 1.4em; font-weight: bold; }
+.event-form label { display: block; margin: 10px 0; font-weight: bold; }
+.event-form li label { display: inline; font-weight: normal; }
+.event-form li { display: inline; list-style: none; padding: 0px; margin: 0 10px 0 0; }
+.event-form input[type="submit"] { display: block; float: right; }
+
+#event-table tr form { visibility: hidden; }
+#event-table tr:hover form { visibility: visible; }
+
+#event-table th { text-align: left; font-weight: bold; } 
+label[for="id_device"], label[for="id_active"] { display: none; }
+#id_device, #id_active { display: none; }
+{% endblock %}
+
+{% block sub-head %}
+<script type="text/javascript">
+
+function showAddEventForm(){ $(".event-form").show(); }
+function hideAddEventForm(){ $(".event-form").hide(); }
+
+function initialize(){
+	hideAddEventForm();
+}
+$(document).ready(function() { initialize(); });
+</script>
 {% endblock %}
 
 {% block content%}
@@ -18,6 +49,39 @@
 </table>
 
 <form method="post" action="."><input type="hidden" name="action" value="toggle" /><input type="submit" value="toggle" /></form>
+
+<h2>Events:</h2>
+
+<table id="event-table">
+{% if events %}
+	<tr><th>Command</th><th>Time</th><th></th></tr>
+	{% for event in events %}
+		<tr>
+			<td>{{ event.command }}</td>
+			<td>{{ event.time_description }}</td>
+			<td style="padding-left: 3em;">
+				<form method="post" action="."><input type="hidden" name="action" value="delete" /><input type="hidden" name="event_id" value="{{ event.id }}" /><input type="submit" value="delete" /></form>
+			</td>
+		</tr>
+	{% endfor %}
+{% else %}
+	<tr>
+		<td>No events for this iBoot.</td>
+	</tr>
+{% endif %}
+	<tr>
+		<td><input type="submit" onclick="showAddEventForm(); return false;" value="add event..." /></td>
+	</tr>
+</table>
+	
+<form method="post" class="event-form">
+	<a class="close-link" href="." onclick="hideAddEventForm(); return false;">[x]</a>
+	{{ new_event_form }}	
+	<input type="submit" value="Schedule the Event" />
+	<p style="margin-top: 40px;">Checking no days schedules the event to run every day.</p>
+	<p>Similarly, checking no hours schedules the event to run every hour.</p>
+	<p>Checking no minutes only schedules the event to run at the top of the hour.</p>
+</form>
 
 {% endblock %}
 

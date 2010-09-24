@@ -24,7 +24,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.template.loader import render_to_string
 from django.utils import feedgenerator
 
-from models import *
+from models import IBootDevice, IBootEvent
+from forms import IBootEventForm
 from iboot_control import IBootControl
 
 @staff_member_required
@@ -36,6 +37,20 @@ def iboot(request, id):
 	iboot = get_object_or_404(IBootDevice, pk=id)
 	control = IBootControl(settings.IBOOT_POWER_PASSWORD, iboot.ip)
 	if request.method == 'POST':
-		if request.POST.get('action', None) == 'toggle': control.toggle()
+		new_event_form = IBootEventForm(request.POST)
+		if request.POST.get('action', None) == 'toggle':
+			control.toggle()
+			new_event_form = IBootEventForm(initial={ 'device':iboot.id, 'command':'cycle' })
+		elif request.POST.get('action', None) == 'delete' and request.POST.get('event_id', None):
+			event = IBootEvent.objects.get(pk=int(request.POST.get('event_id', None)))
+			event.delete()
+			new_event_form = IBootEventForm(initial={ 'device':iboot.id, 'command':'cycle' })
+		elif new_event_form.is_valid():
+			event = new_event_form.save()
+			new_event_form = IBootEventForm(initial={ 'device':iboot.id, 'command':'cycle' })
+		else:
+			print 'not valid:', new_event_form.data
+	else:
+		new_event_form = IBootEventForm(initial={ 'device':iboot.id, 'command':'cycle' })
 	status = control.query_iboot_state()
-	return render_to_response('iboot/iboot.html', { 'iboot':iboot, 'status':status }, context_instance=RequestContext(request))
+	return render_to_response('iboot/iboot.html', { 'iboot':iboot, 'status':status, 'events':IBootEvent.objects.filter(device=iboot), 'new_event_form':new_event_form }, context_instance=RequestContext(request))

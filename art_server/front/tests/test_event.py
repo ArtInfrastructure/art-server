@@ -7,6 +7,29 @@ from django.core import mail
 
 from front.models import EventModel, to_array, clean_int_field, previous_element
 
+def print_times():
+	# just used to eyeball the time strings
+	event = EventModel()
+	print 'Empty:', event.time_description()
+
+	event.days = '1'
+	print 'Tuesday at midnight:', event.time_description()
+
+	event.days = '1,3'
+	event.hours = '0, 12'
+	print 'Tuesday and Thursday at midnight and noon:', event.time_description()
+
+	event.days = '1,3'
+	event.hours = '0,12'
+	event.minutes = '15,45'
+	print 'Tuesday and Thursday at 0 and 12 hours and 15 and 45 minutes:', event.time_description()
+
+	event.days = '1,3'
+	event.hours = '14'
+	event.minutes = '30'
+	print 'Tuesday and Thursday at 0 and 12 hours at 30 minutes:', event.time_description()
+
+
 class EventTest(TestCase):
 	def setUp(self):
 		pass
