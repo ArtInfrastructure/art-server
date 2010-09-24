@@ -12,12 +12,14 @@ class PJLinkProtocol:
 	ON = "1"
 	OFF = "0"
 	QUERY = "?"
+	
+	# Theses aren't to spec but they are what panasonic ships
 	VIDEO_MUTE_ON = "31"
 	VIDEO_MUTE_OFF = "30"
-	AUDIO_MUTE_ON = "21"
-	AUDIO_MUTE_OFF = "20"
 	AUDIO_VIDEO_MUTE_ON = "31"
 	AUDIO_VIDEO_MUTE_OFF = "30"
+	AUDIO_MUTE_ON = "21"
+	AUDIO_MUTE_OFF = "20"
 	
 	# INPUT
 	RGB_INPUT = "1"
