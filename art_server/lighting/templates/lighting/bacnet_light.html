@@ -24,6 +24,7 @@
 <form action="." method="post">
    {{ light_control_form }}
 	<input type="submit" value="set value" />
+	{% csrf_token %}
 </form>
 
 {% endblock %}

@@ -43,6 +43,7 @@ function updateResults(xpath){
 <div id="controls">
 	<form id="control-form" action="." method="get" onsubmit="updateResults($('#control-input').val()); return false;">
 		<label>Enter an XPath:</label><input type="text" id="control-input" name="control-input" /> <input type="submit" value="filter" />
+		{% csrf_token %}
 	</form>
 </div>
 

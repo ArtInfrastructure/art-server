@@ -33,7 +33,7 @@ function hideErrorMessage(){
 <h2>Available tests:</h2>
 <ul id="tests-list">
 	{% for test in status_listener.tests.all %}
-		<li>{{ test.name }} <form action="." method="post"><input type="hidden" name="test_name" value="{{ test.name }}" /><input type="submit" value="run" /></form></li>
+		<li>{{ test.name }} <form action="." method="post"><input type="hidden" name="test_name" value="{{ test.name }}" /><input type="submit" value="run" />{% csrf_token %}</form></li>
 	{% endfor %}
 </ul>
 

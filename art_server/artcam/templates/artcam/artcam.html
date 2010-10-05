@@ -22,7 +22,7 @@ function triggerArtcamUpdate() {
 
 {% block content%}
 <h1><a href="{% url artcam.views.index %}">ArtCams</a> &raquo; {{ artcam.name }}:</h1>
-<form style="display: inline;"><input type="submit" value="update" onclick="triggerArtcamUpdate(); return false;" /></form>
+<form style="display: inline;"><input type="submit" value="update" onclick="triggerArtcamUpdate(); return false;" />{% csrf_token %}</form>
 <a href="http://{{ artcam.domain }}/">Direct Link to Camera</a> | <a href="{% url artcam.views.artcam_video artcam.id %}">Stream</a><br />
 <br/>
 

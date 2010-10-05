@@ -31,7 +31,7 @@ $(document).ready(function() { initialize(); });
 		</td></tr>
 </table>
 
-<form method="post" action="."><input type="hidden" name="action" value="toggle" /><input type="submit" value="toggle" /></form>
+<form method="post" action="."><input type="hidden" name="action" value="toggle" /><input type="submit" value="toggle" />{% csrf_token %}</form>
 
 <h2>Events:</h2>
 

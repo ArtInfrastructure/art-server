@@ -87,7 +87,7 @@ $(document).ready(function() { initialize(); });
 			<td>{{ event.command }}</td>
 			<td>{{ event.time_description }}</td>
 			<td style="padding-left: 3em;">
-				<form method="post" action="."><input type="hidden" name="action" value="delete" /><input type="hidden" name="event_id" value="{{ event.id }}" /><input type="submit" value="delete" /></form>
+				<form method="post" action="."><input type="hidden" name="action" value="delete" /><input type="hidden" name="event_id" value="{{ event.id }}" /><input type="submit" value="delete" />{% csrf_token %}</form>
 			</td>
 		</tr>
 	{% endfor %}
