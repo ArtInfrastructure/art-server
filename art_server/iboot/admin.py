@@ -15,5 +15,5 @@ class IBootDeviceAdmin(StyledModelAdmin):
 admin.site.register(IBootDevice, IBootDeviceAdmin)	
 
 class IBootEventAdmin(StyledModelAdmin):
-	pass
+	readonly_fields = ('tries', 'last_run')
 admin.site.register(IBootEvent, IBootEventAdmin)	

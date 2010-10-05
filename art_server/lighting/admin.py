@@ -19,5 +19,5 @@ class ProjectorAdmin(StyledModelAdmin):
 admin.site.register(Projector, ProjectorAdmin)	
 
 class ProjectorEventAdmin(StyledModelAdmin):
-	pass
+	readonly_fields = ('tries', 'last_run')
 admin.site.register(ProjectorEvent, ProjectorEventAdmin)	
