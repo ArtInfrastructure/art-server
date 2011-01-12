@@ -30,6 +30,11 @@ urlpatterns = patterns('',
 	(r'^api/aodb/(?P<id>[\d]+)/$', 'airport.views.snapshot'),
 	(r'^airport/', include('airport.urls')),
 
+	(r'^api/audio/ab-device/$', 'incus.api_views.ab_devices'),
+	(r'^api/audio/ab-device/(?P<id>[\d]+)/$', 'incus.api_views.ab_device'),
+	(r'^api/audio/ab-group/(?P<id>[\d]+)/$', 'incus.api_views.ab_group'),
+	(r'^audio/', include('incus.urls')),
+
 	(r'^status/', include('flock.urls')),
 	(r'^iboot/', include('iboot.urls')),
 	(r'^artcam/', include('artcam.urls')),

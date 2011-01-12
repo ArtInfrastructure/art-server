@@ -1,15 +1,5 @@
 # Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 import os
-import os.path
-import Image
-import httplib
-import urllib
-import datetime, calendar
-import random
-import time
-import re
-import feedparser
-import unicodedata
 import traceback
 import logging
 import pprint
@@ -26,13 +16,15 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_unicode
 from django.db.models import Q
 
+from art_server.incus_client import ABDeviceInfo, ABChannelGroupInfo, ABChannelInfo
+
 class ABDevice(models.Model):
 	"""Represents an AudioBox device."""
 	name = models.CharField(max_length=1024, null=False, blank=False)
 	ip = models.IPAddressField(blank=False, null=False)
 	port = models.IntegerField(blank=False, null=False, default=55128)
-	def channel_groups(self):
-		return ABChannelGroup.objects.filter(channels__audioBoxDevice=self).distinct()
+	def channel_groups(self): return ABChannelGroup.objects.filter(channels__audioBoxDevice=self).distinct()
+	def wrap(self): return ABDeviceInfo(self.id, self.name, self.ip, self.port, [group.wrap() for group in self.channel_groups()])
 	class Meta:
 		verbose_name = 'AudioBox device'
 		verbose_name_plural = 'AudioBox devices'
@@ -44,6 +36,7 @@ class ABChannelGroup(models.Model):
 	"""A set of channels whose gain can be controlled as a group, each with relative gain changes."""
 	name = models.CharField(max_length=1024, null=False, blank=False)
 	master_gain = models.FloatField(null=False, default=0)
+	def wrap(self): return ABChannelGroupInfo(self.id, self.name, self.master_gain, [channel.wrap() for channel in self.channels.all()])
 	class Meta:
 		verbose_name = 'channel group'
 		verbose_name_plural = 'channel groups'
@@ -57,6 +50,7 @@ class ABChannel(models.Model):
 	number = models.IntegerField(blank=False, null=False)
 	channel_group = models.ForeignKey(ABChannelGroup, blank=True, null=True, related_name="channels")
 	gain = models.FloatField(null=False, default=0)
+	def wrap(self): return ABChannelInfo(self.id, self.number, self.gain)
 	class Meta:
 		verbose_name = 'channel'
 		verbose_name_plural = 'channels'

@@ -5,7 +5,4 @@ from django.conf import settings
 from models import *
 
 urlpatterns = patterns('',
-	(r'^device/(?P<id>[\d]+)/$', 'incus.views.device'),
-	(r'^channel-group/(?P<id>[\d]+)/$', 'incus.views.channel_group'),
-	(r'^$', 'incus.views.index'),
 )

@@ -64,6 +64,7 @@ INSTALLED_APPS = (
 	'art_server.flock',
 	'art_server.iboot',
 	'art_server.lighting',
+	'art_server.incus',
 	'art_server.front',
 )
 
