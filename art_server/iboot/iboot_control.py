@@ -17,11 +17,13 @@ class IBootControl:
 	def query_iboot_state(self):
 		"""Returns True if it is on, False if it is off, None if it could not be reached"""
 		result = self.send_command('q')
-		if result == None: return None
+		if result == None or result == 'BUSY': return None
 		return result == 'ON'
 
 	def toggle(self):
-		if self.query_iboot_state():
+		state = self.query_iboot_state()
+		if state == None: return None
+		if state:
 			return self.turn_off()
 		else:
 			return self.turn_on()
@@ -35,15 +37,16 @@ class IBootControl:
 	def send_command(self, command):
 		"Sends a command to the device.  Returns the result code or None if it can't control the device."
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.settimeout(5)
+		sock.settimeout(15)
 		try:
 			sock.connect((self.host, self.port))
 			msg = self.format_command(command)
 			sock.send(msg)
-			value = sock.recv(20)
+			value = sock.recv(1024)
 			if value == '': 
 				sock.close()
 				return None
+			sock.close()
 			return value
 		except:
 			print pprint.pformat(traceback.format_exc()) 
