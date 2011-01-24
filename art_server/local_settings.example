@@ -13,6 +13,8 @@ IBOOT_POWER_PASSWORD = 'pass'
 
 SECRET_KEY = 'somesecretstring'
 
+AUDIO_EMERGENCY_CODE = 1234 #punched into the phone to mute the audio system
+
 from artcam.tasks import ArtcamTask
 from airport.tasks import FileMungerTask
 from iboot.tasks import IBootEventTask

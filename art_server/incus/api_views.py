@@ -30,6 +30,24 @@ from django.utils import feedgenerator
 from models import *
 from art_server.hydration import dehydrate_to_list_xml, dehydrate_to_xml
 
+def emergency(request):
+	try:
+		if request.method == 'POST' and request.POST.get('code', None):
+			try:
+				code = int(request.POST.get('code'))
+			except:
+				return HttpResponse('Bad code', content_type="text/plain")
+
+			if settings.AUDIO_EMERGENCY_CODE == code:
+				# TODO Activate the emergency audio system
+				print 'This is where we would activate the emergency audio system and notify the art tech'
+				return HttpResponse('Activated', content_type="text/plain")
+			else:
+				return HttpResponse('Bad code', content_type="text/plain")
+		return HttpResponse('This is the audio emergency API. Nothing happened.', content_type="text/plain")
+	except:
+		traceback.print_exc()
+
 def ab_devices(request):
 	return HttpResponse(dehydrate_to_list_xml([device.wrap() for device in ABDevice.objects.all()]), content_type="text/xml")
 
@@ -40,3 +58,19 @@ def ab_device(request, id):
 def ab_group(request, id):
 	group = get_object_or_404(ABChannelGroup, pk=id)
 	return HttpResponse(dehydrate_to_xml(group.wrap()), content_type="text/xml")
+
+def ab_group_gain(request, id):
+	group = get_object_or_404(ABChannelGroup, pk=id)
+	if request.method == 'POST' and request.POST.get('gain', None):
+		print 'This is where we should communicate with the AB64 to set the master gain'
+		group.master_gain = float(request.POST.get('gain'))
+		group.save()
+	return HttpResponse(group.master_gain, content_type="text/plain")
+
+def ab_channel_gain(request, id):
+	channel = get_object_or_404(ABChannel, pk=id)
+	if request.method == 'POST' and request.POST.get('gain', None):
+		print 'This is where we should communicate with the AB64 to set the gain'
+		channel.gain = float(request.POST.get('gain'))
+		channel.save()
+	return HttpResponse(channel.gain, content_type="text/plain")
