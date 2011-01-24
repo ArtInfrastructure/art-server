@@ -13,7 +13,7 @@ IBOOT_POWER_PASSWORD = 'pass'
 
 SECRET_KEY = 'somesecretstring'
 
-AUDIO_EMERGENCY_CODE = 1234 #punched into the phone to mute the audio system
+AUDIO_EMERGENCY_CODE = 123456 #this MUST be EXACTLY six digits long
 
 from artcam.tasks import ArtcamTask
 from airport.tasks import FileMungerTask
