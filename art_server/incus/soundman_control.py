@@ -70,6 +70,7 @@ import telnetlib
 import pprint
 import traceback
 import socket
+import sys
 
 class SoundManControl:
 	def __init__(self, host, port=20000):
@@ -107,5 +108,31 @@ class SoundManControl:
 			print traceback.print_exc() 
 		sock.close()
 		return None
+
+def main(sm_control):
+	while True:
+		sys.stdout.write('SOUNDMAN COMMAND >>')
+		line = raw_input()
+		if line == None: break
+		line = line.strip()
+		if len(line) == 0: continue
+		response = sm_control.send_command(line)
+		if response: print response
+
+def print_help():
+	print 'soundmain_control <host>'
+
+if __name__ == '__main__':
+	if len(sys.argv) != 2:
+		print_help()
+		sys.exit(2)
+	try:
+		sm_control = SoundManControl(sys.argv[1])
+		main(sm_control)
+	except EOFError:
+		pass				
+	except KeyboardInterrupt:
+		pass
+	print
 
 # Copyright 2011 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
