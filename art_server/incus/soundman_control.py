@@ -90,24 +90,44 @@ class SoundManControl:
 		return (data, response)
 
 	def is_an_error_response(self, response): return response == None or len(response) == 0 or response.startswith('ERROR')
-	
+
+	def read_result(self, sock):
+		result = ''
+		finished_header = False
+		while True:
+			value = sock.recv(self.receive_size)
+			if value == None or len(value) == 0: break
+			if not finished_header:
+				header_end = value.find('\r\n.\r\n')
+				if header_end != -1:
+					finished_header = True
+					result = value[header_end + 5:]
+			else:
+				result += value
+		if not finished_header: raise Exception("Did not find the end of the SoundMan greeting: %s" % value)
+		result = result.strip()
+		if result.endswith(';'):result = result[0:-1]
+		return result.strip()
+
 	def send_command(self, command):
 		"Sends a command to the device.  Returns the result code or None if it can't control the device."
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.settimeout(15)
 		try:
 			sock.connect((self.host, self.port))
-			sock.send(command)
-			value = sock.recv(self.receive_size)
+			sock.send('%s\r\n' % command)
+			value = self.read_result(sock)
 			if value == '': 
 				sock.close()
 				return None
 			sock.close()
 			return value
 		except:
+			value = None
 			print traceback.print_exc() 
-		sock.close()
-		return None
+		finally:
+			sock.close()
+			return value
 
 def main(sm_control):
 	while True:
