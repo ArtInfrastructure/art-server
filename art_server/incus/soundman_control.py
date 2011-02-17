@@ -96,16 +96,16 @@ class SoundManControl:
 		finished_header = False
 		while True:
 			value = sock.recv(self.receive_size)
-			#print 'RAW RESPONSE: %s' % value
 			if value == None or len(value) == 0: break
 			if not finished_header:
 				header_end = value.find("\r\n.\r\n")
 				if header_end != -1:
 					finished_header = True
 					result = value[header_end + 3:]
-			else:
+
+			if finished_header:	
 				result = result + value
-				if result.endswith("\r\n.\r\n") or result == 'OK' or result.startswith('ERROR ') or result.endswith(';\r\n'): break
+				if result.endswith("\r\n.\r\n") or result.endswith("\r\nOK\r\n") or result == 'OK' or result.startswith('ERROR ') or result.endswith(';\r\n'): break
 		if not finished_header: raise Exception("Did not find the end of the SoundMan greeting: %s" % value)
 		result = result.strip()
 		if result.endswith(';'):result = result[0:-1]
@@ -117,6 +117,7 @@ class SoundManControl:
 		sock.settimeout(15)
 		try:
 			sock.connect((self.host, self.port))
+
 			sock.send('%s\r\n' % command)
 			value = self.read_result(sock)
 			if value == '': 
@@ -126,7 +127,7 @@ class SoundManControl:
 			return value
 		except:
 			value = None
-			print traceback.print_exc() 
+			traceback.print_exc() 
 			sock.close()
 			return value
 
