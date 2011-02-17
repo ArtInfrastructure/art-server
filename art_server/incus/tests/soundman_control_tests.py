@@ -1,4 +1,4 @@
-import socket, select
+import socket, select, time, traceback
 import threading
 
 from django.test import TestCase
@@ -7,6 +7,16 @@ from django.contrib.auth.models import User
 from django.core import mail
 
 from incus.soundman_control import SoundManControl
+
+class MockChannel:
+	def __init__(self, id, channel_type='i', gain=0, mute=False):
+		self.channel_type = channel_type
+		self.id = id
+		self.gain = gain
+		self.mute = mute
+
+	@property
+	def name(self): return '%s%s' % (self.channel_type, self.id)
 
 class MockSoundManServer(threading.Thread):
 	"""This creates a single threaded localhost server socket which speaks the SoundMan protocol"""
@@ -22,8 +32,22 @@ class MockSoundManServer(threading.Thread):
 
 		self.port = 0 # 0 indicates that the server should use any open socket
 		
+		self.inputs = [MockChannel(i, 'i') for i in range(15)]
+		self.outputs = [MockChannel(i, 'o') for i in range(15)]
+		self.playbacks = [MockChannel(i, 'p') for i in range(5)]
+
 		threading.Thread.__init__(self)
 
+	def strip_int(self, raw): return int(''.join([c for c in raw if c.isdigit()]))
+
+	def get_channel(self, name):
+		id = self.strip_int(name)
+		if name.lower().startswith('i') and id < len(self.inputs): return self.inputs[id]
+		if name.lower().startswith('o') and id < len(self.outputs): return self.outputs[id]
+		if name.lower().startswith('p') and id < len(self.playbacks): return self.playbacks[id]
+		print name, id, name.lower().startswith('o')
+		return None
+		
 	def stop_server(self):
 		self.running = False
 		if self.server: self.server.close()
@@ -50,19 +74,40 @@ class MockSoundManServer(threading.Thread):
 				response = None
 				if data.startswith('ECHO '): # A fake command that we use for testing the parser
 					response = '%s;' % data[len('ECHO '):]
+				elif data.lower().startswith('get chan '):
+					channel_names, attribute = self.parse_get_chan(data)
+					print channel_names, attribute
+					response = attribute
+					if attribute == 'gain':
+						for channel_name in channel_names:
+							channel = self.get_channel(channel_name)
+							response += ' %s=%s' % (channel.name, channel.gain)
+					elif attribute == 'mute':
+						for channel in channels: response += ' %s=OFF' % channel
+					else:
+						response = 'ERROR 4444'
 				else:
 					response = 'ERROR 1234'
 				client.send(('%s\r\n' % response).encode())
 				client.close()
 			except (socket.timeout):
 				continue
+			except:
+				traceback.print_exc()
 		self.server.close()
 
+	def parse_get_chan(self, data):
+		tokens = data.split(' ')
+		channels = []
+		for token in tokens[2:-1]: channels.append(token)
+		return (channels, tokens[-1].lower())
+		
 class SoundManControlTest(TestCase):
 	
 	def setUp(self):
 		self.sm_server = MockSoundManServer()
 		self.sm_server.start()
+		time.sleep(1)
 
 	def tearDown(self):
 		self.sm_server.stop_server()
@@ -75,3 +120,20 @@ class SoundManControlTest(TestCase):
 		result = sm_control.send_command('MAKE_AN_ERROR')
 		self.failUnless(result.startswith('ERROR '))
 		
+		data, response = sm_control.get_gains('o1 o2 o3 p4')
+		print data, response
+		self.failUnlessEqual(data['o1'], 0)
+		self.failUnlessEqual(data['o2'], 0)
+		self.failUnlessEqual(data['o3'], 0)
+		self.failUnlessEqual(data['p4'], 0)
+		
+		data, response = sm_control.set_gains({'o1':2, 'o2':4, 'p5':6})
+		self.failUnlessEqual(data, 'OK')
+		
+		data, response = sm_control.get_gains('o1 o2 p5 p4')
+		print data, response
+		self.failUnlessEqual(data['o1'], 2)
+		self.failUnlessEqual(data['o2'], 4)
+		self.failUnlessEqual(data['p5'], 6)
+		self.failUnlessEqual(data['p4'], 0)
+

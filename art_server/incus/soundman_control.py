@@ -84,10 +84,20 @@ class SoundManControl:
 	def is_playing(self):
 		pass
 	
-	def get_input_gains(self, inputIDs):
-		response = self.send_command('GET CHAN INPUT %s' % inputIDs)
-		data = None #TODO parse here or None if failed
-		return (data, response)
+	def get_gains(self, channel_list):
+		response = self.send_command('GET CHAN %s GAIN' % channel_list)
+		return (self.parse_gains(response), response)
+
+	def parse_gains(self, response):
+		print response
+		tokens = response.split(' ')
+		if tokens[0].lower() != 'gain': return None
+		results = {}
+		for token in tokens[1:]:
+			key, val = token.split('=')
+			print token, key, val
+			results[key] = float(val)
+		return results
 
 	def is_an_error_response(self, response): return response == None or len(response) == 0 or response.startswith('ERROR')
 
@@ -101,15 +111,16 @@ class SoundManControl:
 				header_end = value.find("\r\n.\r\n")
 				if header_end != -1:
 					finished_header = True
-					result = value[header_end + 3:]
+					value = value[header_end + 5:]
 
 			if finished_header:	
 				result = result + value
 				if result.endswith("\r\n.\r\n") or result.endswith("\r\nOK\r\n") or result == 'OK' or result.startswith('ERROR ') or result.endswith(';\r\n'): break
+
 		if not finished_header: raise Exception("Did not find the end of the SoundMan greeting: %s" % value)
 		result = result.strip()
 		if result.endswith(';'):result = result[0:-1]
-		return result.strip()
+		return result
 
 	def send_command(self, command):
 		"Sends a command to the device.  Returns the result code or None if it can't control the device."
@@ -117,7 +128,6 @@ class SoundManControl:
 		sock.settimeout(15)
 		try:
 			sock.connect((self.host, self.port))
-
 			sock.send('%s\r\n' % command)
 			value = self.read_result(sock)
 			if value == '': 
