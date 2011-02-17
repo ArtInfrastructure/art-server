@@ -29,6 +29,7 @@ from django.utils import feedgenerator
 
 from models import *
 from art_server.hydration import dehydrate_to_list_xml, dehydrate_to_xml
+from incus.soundman_control import SoundManControl
 
 def emergency(request):
 	try:
@@ -71,6 +72,9 @@ def ab_channel_gain(request, id):
 	channel = get_object_or_404(ABChannel, pk=id)
 	if request.method == 'POST' and request.POST.get('gain', None):
 		print 'This is where we should communicate with the AB64 to set the gain'
-		channel.gain = float(request.POST.get('gain'))
+		gain = float(request.POST.get('gain'))
+		control = SoundManControl(channel.audioBoxDevice.ip, channel.audioBoxDevice.port)
+		control.set_gain(channel.short_name, gain)
+		channel.gain = gain
 		channel.save()
 	return HttpResponse(channel.gain, content_type="text/plain")

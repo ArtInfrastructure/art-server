@@ -49,10 +49,18 @@ class ABChannel(models.Model):
 	audioBoxDevice = models.ForeignKey(ABDevice, blank=False, null=False)
 	number = models.IntegerField(blank=False, null=False)
 	channel_group = models.ForeignKey(ABChannelGroup, blank=True, null=True, related_name="channels")
-	gain = models.FloatField(null=False, default=0)
-	def wrap(self): return ABChannelInfo(self.id, self.number, self.gain)
+	gain = models.FloatField(null=False, default=1)
+	CHANNEL_TYPES = (('o','Output'), ('i','Input'), ('p','Playback'))
+	channel_type = models.CharField(max_length=1, null=False, blank=False, default='o', choices=CHANNEL_TYPES)
+
+	@property
+	def short_name(self): return '%s%s' % (self.channel_type, self.number)
+
+	def wrap(self): return ABChannelInfo(self.id, self.number, self.gain, self.channel_type)
+
 	class Meta:
 		verbose_name = 'channel'
 		verbose_name_plural = 'channels'
 		ordering = ['number']
-	def __unicode__(self): return '%s - channel %s' % (self.audioBoxDevice.__unicode__(), self.number)
+
+	def __unicode__(self): return '%s %s%s' % (self.audioBoxDevice.__unicode__(), self.channel_type, self.number)

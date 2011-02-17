@@ -83,19 +83,25 @@ class SoundManControl:
 	
 	def is_playing(self):
 		pass
+
+	def set_gains(self, gain_map):
+		"""gain_map is of types {'o1':1.0 } channel name and gain float"""
+		for (name, gain) in gain_map.items(): self.set_gain(name, gain)
+
+	def set_gain(self, channel_name, gain): return self.send_command('SET CHAN %s GAIN %s' % (channel_name, gain))
 	
 	def get_gains(self, channel_list):
 		response = self.send_command('GET CHAN %s GAIN' % channel_list)
 		return (self.parse_gains(response), response)
 
 	def parse_gains(self, response):
-		print response
+		#print response
 		tokens = response.split(' ')
 		if tokens[0].lower() != 'gain': return None
 		results = {}
 		for token in tokens[1:]:
 			key, val = token.split('=')
-			print token, key, val
+			#print token, key, val
 			results[key] = float(val)
 		return results
 
@@ -106,7 +112,7 @@ class SoundManControl:
 		finished_header = False
 		while True:
 			value = sock.recv(self.receive_size)
-			print 'RECV: %s' % repr(value)
+			#print 'RECV: %s' % repr(value)
 			if value == None or len(value) == 0: break
 			if not finished_header:
 				header_end = value.find("\r\n.\r\n")
@@ -116,7 +122,7 @@ class SoundManControl:
 
 			if finished_header:	
 				result = result + value
-				print 'RESULT %s' % repr(result)
+				#print 'RESULT %s' % repr(result)
 				if result.endswith("\r\n.\r\n") or result.endswith("OK\r\n") or result == 'OK' or result.startswith('ERROR ') or result.endswith(';\r\n'): break
 
 		if not finished_header: raise Exception("Did not find the end of the SoundMan greeting: %s" % value)
@@ -127,7 +133,7 @@ class SoundManControl:
 	def send_command(self, command):
 		"Sends a command to the device.  Returns the result code or None if it can't control the device."
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.settimeout(15)
+		sock.settimeout(10)
 		try:
 			sock.connect((self.host, self.port))
 			sock.send('%s\r\n' % command)

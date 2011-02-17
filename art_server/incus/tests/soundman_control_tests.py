@@ -45,7 +45,6 @@ class MockSoundManServer(threading.Thread):
 		if name.lower().startswith('i') and id < len(self.inputs): return self.inputs[id]
 		if name.lower().startswith('o') and id < len(self.outputs): return self.outputs[id]
 		if name.lower().startswith('p') and id < len(self.playbacks): return self.playbacks[id]
-		print name, id, name.lower().startswith('o')
 		return None
 		
 	def stop_server(self):
@@ -75,17 +74,25 @@ class MockSoundManServer(threading.Thread):
 				if data.startswith('ECHO '): # A fake command that we use for testing the parser
 					response = '%s;' % data[len('ECHO '):]
 				elif data.lower().startswith('get chan '):
-					channel_names, attribute = self.parse_get_chan(data)
-					print channel_names, attribute
-					response = attribute
-					if attribute == 'gain':
+					channel_names, attributes = self.parse_chan_list(data)
+					response = attributes[0]
+					if attributes[0] == 'gain':
 						for channel_name in channel_names:
 							channel = self.get_channel(channel_name)
 							response += ' %s=%s' % (channel.name, channel.gain)
-					elif attribute == 'mute':
+					elif attributes[0] == 'mute':
 						for channel in channels: response += ' %s=OFF' % channel
 					else:
 						response = 'ERROR 4444'
+				elif data.lower().startswith('set chan '):
+					channel_names, attributes = self.parse_chan_list(data, end_token_count=2)
+					for channel_name in channel_names:
+						channel = self.get_channel(channel_name)
+						if attributes[0] == 'gain':
+							channel.gain = float(attributes[1])
+							response = 'OK'
+						else:
+							response = 'ERROR 3333'
 				else:
 					response = 'ERROR 1234'
 				client.send(('%s\r\n' % response).encode())
@@ -96,11 +103,11 @@ class MockSoundManServer(threading.Thread):
 				traceback.print_exc()
 		self.server.close()
 
-	def parse_get_chan(self, data):
+	def parse_chan_list(self, data, end_token_count=1):
 		tokens = data.split(' ')
 		channels = []
-		for token in tokens[2:-1]: channels.append(token)
-		return (channels, tokens[-1].lower())
+		for token in tokens[2:-1 * end_token_count]: channels.append(token)
+		return (channels, [token.lower() for token in tokens[-1 * end_token_count:]])
 		
 class SoundManControlTest(TestCase):
 	
@@ -121,19 +128,23 @@ class SoundManControlTest(TestCase):
 		self.failUnless(result.startswith('ERROR '))
 		
 		data, response = sm_control.get_gains('o1 o2 o3 p4')
-		print data, response
 		self.failUnlessEqual(data['o1'], 0)
 		self.failUnlessEqual(data['o2'], 0)
 		self.failUnlessEqual(data['o3'], 0)
 		self.failUnlessEqual(data['p4'], 0)
 		
-		data, response = sm_control.set_gains({'o1':2, 'o2':4, 'p5':6})
-		self.failUnlessEqual(data, 'OK')
-		
-		data, response = sm_control.get_gains('o1 o2 p5 p4')
-		print data, response
+		sm_control.set_gains({'o1':2, 'o2':4, 'p3':6})
+		data, response = sm_control.get_gains('o1 o2 p3 p4')
+		#print 'set', data, response
 		self.failUnlessEqual(data['o1'], 2)
 		self.failUnlessEqual(data['o2'], 4)
-		self.failUnlessEqual(data['p5'], 6)
+		self.failUnlessEqual(data['p3'], 6)
+		self.failUnlessEqual(data['p4'], 0)
+
+		sm_control.set_gains({'o1':0, 'o2':0, 'p3':0})
+		data, response = sm_control.get_gains('o1 o2 p3 p4')
+		self.failUnlessEqual(data['o1'], 0)
+		self.failUnlessEqual(data['o2'], 0)
+		self.failUnlessEqual(data['p3'], 0)
 		self.failUnlessEqual(data['p4'], 0)
 
