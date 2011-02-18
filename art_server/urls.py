@@ -35,6 +35,7 @@ urlpatterns = patterns('',
 	(r'^api/audio/ab-group/(?P<id>[\d]+)/$', 'incus.api_views.ab_group'),
 	(r'^api/audio/ab-group/(?P<id>[\d]+)/gain/$', 'incus.api_views.ab_group_gain'),
 	(r'^api/audio/ab-channel/(?P<id>[\d]+)/gain/$', 'incus.api_views.ab_channel_gain'),
+	(r'^api/audio/ab-channel/(?P<id>[\d]+)/mute/$', 'incus.api_views.ab_channel_mute'),
 	(r'^api/audio/emergency/$', 'incus.api_views.emergency'),
 	(r'^audio/', include('incus.urls')),
 

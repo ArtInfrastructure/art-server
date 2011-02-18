@@ -30,6 +30,7 @@ from django.utils import feedgenerator
 from models import *
 from art_server.hydration import dehydrate_to_list_xml, dehydrate_to_xml
 from incus.soundman_control import SoundManControl
+from front.management.commands.send_alert import Command as SendAlertCommand
 
 def emergency(request):
 	try:
@@ -40,8 +41,20 @@ def emergency(request):
 				return HttpResponse('Bad code', content_type="text/plain")
 
 			if settings.AUDIO_EMERGENCY_CODE == code:
-				# TODO Activate the emergency audio system
-				print 'This is where we would activate the emergency audio system and notify the art tech'
+				control_error = False
+				for group in ABChannelGroup.objects.all():
+					for channel in group.channels.all():
+						try:
+							control = SoundManControl(channel.audioBoxDevice.ip, channel.audioBoxDevice.port)
+							result = control.mute(channel.short_name)
+							print 'muted', channel, result
+						except:
+							traceback.print_exc()
+							control_error = True
+				emergency_message = "Someone activated the emergency audio system."
+				if control_error: emergency_message += " Also, there was an error communicating with the audio server."
+				alert_command = SendAlertCommand()
+				alert_command.handle("AUDIO EMERGENCY SYSTEM ACTIVATED", emergency_message)
 				return HttpResponse('Activated', content_type="text/plain")
 			else:
 				return HttpResponse('Bad code', content_type="text/plain")
@@ -68,10 +81,20 @@ def ab_group_gain(request, id):
 		group.save()
 	return HttpResponse(group.master_gain, content_type="text/plain")
 
+def ab_channel_mute(request, id):
+	channel = get_object_or_404(ABChannel, pk=id)
+	control = SoundManControl(channel.audioBoxDevice.ip, channel.audioBoxDevice.port)
+	if request.method == 'POST' and request.POST.get('mute', None) == 'toggle':
+		control.toggle_mute(channel.short_name)
+	elif request.method == 'POST' and request.POST.get('mute', None) == 'on':
+		control.mute(channel.short_name)
+	elif request.method == 'POST' and request.POST.get('mute', None) == 'off':
+		control.unmute(channel.short_name)
+	return HttpResponse(control.get_mute(channel.short_name), content_type="text/plain")
+
 def ab_channel_gain(request, id):
 	channel = get_object_or_404(ABChannel, pk=id)
 	if request.method == 'POST' and request.POST.get('gain', None):
-		print 'This is where we should communicate with the AB64 to set the gain'
 		gain = float(request.POST.get('gain'))
 		control = SoundManControl(channel.audioBoxDevice.ip, channel.audioBoxDevice.port)
 		control.set_gain(channel.short_name, gain)

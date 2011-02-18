@@ -81,7 +81,12 @@ class MockSoundManServer(threading.Thread):
 							channel = self.get_channel(channel_name)
 							response += ' %s=%s' % (channel.name, channel.gain)
 					elif attributes[0] == 'mute':
-						for channel in channels: response += ' %s=OFF' % channel
+						for channel_name in channel_names:
+							channel = self.get_channel(channel_name)
+							if channel.mute:
+								response += ' %s=ON' % channel.name
+							else:
+								response += ' %s=OFF' % channel.name
 					else:
 						response = 'ERROR 4444'
 				elif data.lower().startswith('set chan '):
@@ -90,6 +95,9 @@ class MockSoundManServer(threading.Thread):
 						channel = self.get_channel(channel_name)
 						if attributes[0] == 'gain':
 							channel.gain = float(attributes[1])
+							response = 'OK'
+						elif attributes[0] == 'mute':
+							channel.mute = attributes[1] == 'on'
 							response = 'OK'
 						else:
 							response = 'ERROR 3333'
@@ -147,4 +155,14 @@ class SoundManControlTest(TestCase):
 		self.failUnlessEqual(data['o2'], 0)
 		self.failUnlessEqual(data['p3'], 0)
 		self.failUnlessEqual(data['p4'], 0)
+
+		self.failUnlessEqual(sm_control.get_mute('p0'), False)
+		response = sm_control.mute('p0')
+		self.failUnlessEqual(sm_control.get_mute('p0'), True)
+		response = sm_control.unmute('p0')
+		self.failUnlessEqual(sm_control.get_mute('p0'), False)
+		response = sm_control.toggle_mute('p0')
+		self.failUnlessEqual(sm_control.get_mute('p0'), True)
+		response = sm_control.toggle_mute('p0')
+		self.failUnlessEqual(sm_control.get_mute('p0'), False)
 

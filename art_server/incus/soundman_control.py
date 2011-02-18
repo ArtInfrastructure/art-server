@@ -89,6 +89,23 @@ class SoundManControl:
 		for (name, gain) in gain_map.items(): self.set_gain(name, gain)
 
 	def set_gain(self, channel_name, gain): return self.send_command('SET CHAN %s GAIN %s' % (channel_name, gain))
+
+	def toggle_mute(self, channel_name):
+		muted = self.get_mute(channel_name)
+		if muted == None: return None
+		if muted:
+			return self.unmute(channel_name)
+		else:
+			return self.mute(channel_name)
+
+	def get_mute(self, channel_name):
+		response = self.send_command('GET CHAN %s MUTE' % channel_name)
+		if not response: return None
+		return response.endswith('=ON')
+
+	def mute(self, channel_name): return self.send_command('SET CHAN %s MUTE ON' % channel_name)
+
+	def unmute(self, channel_name): return self.send_command('SET CHAN %s MUTE OFF' % channel_name)
 	
 	def get_gains(self, channel_list):
 		response = self.send_command('GET CHAN %s GAIN' % channel_list)
