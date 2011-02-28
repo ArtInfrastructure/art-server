@@ -78,12 +78,6 @@ class SoundManControl:
 		self.port = port
 		self.receive_size = 1024 * 5
 	
-	def play(self):
-		pass
-	
-	def is_playing(self):
-		pass
-
 	def set_gains(self, gain_map):
 		"""gain_map is of types {'o1':1.0 } channel name and gain float"""
 		for (name, gain) in gain_map.items(): self.set_gain(name, gain)
