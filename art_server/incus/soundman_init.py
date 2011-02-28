@@ -33,8 +33,8 @@ def main():
 	incus_host = sys.argv[2]
 	print 'Initializing the SoundMan server at %s' % soundman_host
 	soundman_control = SoundManControl(soundman_host)
-	#soundman_control.send_command('config set interface 0')
-	#soundman_control.send_command('set matrix pb diagonal gain 1;')
+	soundman_control.send_command('config set interface 0')
+	soundman_control.send_command('set matrix pb diagonal gain 1;')
 
 	for gain in get_gains(incus_host):
 		soundman_control.set_gain('%s%s' % (gain[0], gain[1]), gain[2])
