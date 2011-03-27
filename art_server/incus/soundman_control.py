@@ -150,13 +150,16 @@ class SoundManControl:
 			sock.send('%s\r\n' % command)
 			value = self.read_result(sock)
 			if value == '': 
+				sock.shutdown(socket.SHUT_RDWR)
 				sock.close()
 				return None
+			sock.shutdown(socket.SHUT_RDWR)
 			sock.close()
 			return value
 		except:
 			value = None
 			traceback.print_exc() 
+			sock.shutdown(socket.SHUT_RDWR)
 			sock.close()
 			return value
 
