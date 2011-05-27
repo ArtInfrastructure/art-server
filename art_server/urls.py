@@ -40,6 +40,7 @@ urlpatterns = patterns('',
 	(r'^audio/', include('incus.urls')),
 
 	(r'^status/', include('flock.urls')),
+	(r'^epoxy/', include('epoxy.urls')),
 	(r'^iboot/', include('iboot.urls')),
 	(r'^artcam/', include('artcam.urls')),
 	(r'^lighting/', include('lighting.urls')),

@@ -60,6 +60,7 @@ INSTALLED_APPS = (
 	'south',
 	'piston',
 	'art_server.airport',
+	'art_server.epoxy',
 	'art_server.artcam',
 	'art_server.flock',
 	'art_server.iboot',
