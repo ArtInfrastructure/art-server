@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block sub-title %}Creston Control | {% endblock %}
+
+{% block style %}
+#content th { font-weight: bold; }
+{% endblock %}
+
+{% block content%}
+<h1>Creston Control:</h1>
+{% if message %}
+<div id="message">{{ message }}</div>
+{% endif %}
+
+<table>
+    <tr>
+        <th>Current:</th>
+        <td>{{ control_info.Current }}</td>
+    </tr>
+    <tr>
+        <th>High:</th>
+        <td>{{ control_info.High }}</td>
+    </tr>
+    <tr>
+        <th>Low:</th>
+        <td>{{ control_info.Low }}</td>
+    </tr>
+    <tr>
+        <th>Wake:</th>
+        <td>{{ control_info.Wake }}</td>
+    </tr>
+    <tr>
+        <th>Sleep:</th>
+        <td>{{ control_info.Sleep }}</td>
+    </tr>
+    <tr>
+        <th>Lamp 1:</th>
+        <td>{{ control_info.Lamp1 }}</td>
+    </tr>
+    <tr>
+        <th>Lamp 2:</th>
+        <td>{{ control_info.Lamp2 }}</td>
+    </tr>
+</table>
+
+{% endblock %}
+
+/* Copyright 2011 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. */

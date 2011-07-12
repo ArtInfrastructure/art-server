@@ -26,6 +26,7 @@ from django.template.loader import render_to_string
 from django.utils import feedgenerator
 
 from bacnet_control import BacnetControl
+from creston_control import CrestonControl
 from pjlink import PJLinkController, PJLinkProtocol
 from api_views import ProjectorInfo, LampInfo
 
@@ -35,6 +36,18 @@ from forms import *
 @staff_member_required
 def index(request):
 	return render_to_response('lighting/index.html', { 'bacnet_lights':BACNetLight.objects.all(), 'projectors':Projector.objects.all() }, context_instance=RequestContext(request))
+
+@staff_member_required
+def creston(request):
+	control = CrestonControl(settings.CRESTON_CONTROL_HOST)
+	message = None
+	control_info = None
+	try:
+		control_info = control.query_status()
+	except:
+		message = 'Could not communicate with the controller.'
+		
+	return render_to_response('lighting/creston.html', {'control_info':control_info}, context_instance=RequestContext(request))
 
 @staff_member_required
 def bacnet_light(request, id):

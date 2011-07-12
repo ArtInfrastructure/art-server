@@ -7,5 +7,6 @@ from models import *
 urlpatterns = patterns('',
 	(r'^bnlight/(?P<id>[\d]+)/$', 'lighting.views.bacnet_light'),
 	(r'^projector/(?P<id>[\d]+)/$', 'lighting.views.projector'),
+	(r'^creston/$', 'lighting.views.creston'),
 	(r'^$', 'lighting.views.index'),
 )
