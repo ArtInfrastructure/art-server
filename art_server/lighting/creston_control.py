@@ -30,7 +30,7 @@ class CrestonControl(object):
 		lines = self.send_command('Update', lines=9)
 		results = {}
 		for line in lines:
-			key, sep, val = line.partition('-')
+			key, val = line.split('-', 1)
 			results[key] = val
 		return results
 
