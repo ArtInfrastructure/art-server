@@ -1,9 +1,9 @@
 # Copyright 2009 GORBET + BANERJEE (http://www.gorbetbanerjee.com/) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-import datetime
 import sys
+import datetime
 import calendar
-import pprint
 import traceback
+import simplejson as json
 
 from django.conf import settings
 from django.db.models import Q
@@ -42,13 +42,50 @@ def creston(request):
 	control = CrestonControl(settings.CRESTON_CONTROL_HOST)
 	message = None
 	control_info = None
+	return_json = False
 	try:
-		control_info = control.query_status()
+		if request.method == 'POST':
+			command_form = CrestonCommandForm(request.POST)
+			if request.POST.get('action', None): 
+				action = request.POST.get('action')
+				if action == 'high-up':
+					control.raise_high()
+				elif action == 'high-down':
+					control.lower_high()
+				elif action == 'low-up':
+					control.raise_low()
+				elif action == 'low-down':
+					control.lower_low()
+				else:
+					print "Error: unknown action: %s" % action
+					raise HttpResponseServeError('unknown action: %s' % action)
+				return_json = True
+			elif request.POST.get('command', None):
+				if command_form.is_valid():
+					command = command_form.cleaned_data['command']
+					if command == 'Update':
+						lines = 9
+					else:
+						lines = 1
+					result = control.send_command(command, lines)
+					return HttpResponse(str(result or "Error"), mimetype='text/plain')
+				else:
+					print 'is not valid', command_form
+			else:
+				print 'no POST', request.POST
+		else:
+			command_form = CrestonCommandForm()
+			
+		try:
+			control_info = control.query_status()
+			#control_info = {'High': '55000', 'Current': '63098', 'Wake': '5:00 AM', 'Low': '63098', 'Lamp1': '2-1468', 'Sleep': '1:00 AM', 'Lamp2': '2-1469'}
+		except:
+			message = 'Could not communicate with the controller.'
+		if return_json: return HttpResponse(json.dumps(control_info), mimetype='application/json')
+		return render_to_response('lighting/creston.html', {'command_form':command_form, 'control_info':control_info}, context_instance=RequestContext(request))
 	except:
-		message = 'Could not communicate with the controller.'
+		traceback.print_exc()
 		
-	return render_to_response('lighting/creston.html', {'control_info':control_info}, context_instance=RequestContext(request))
-
 @staff_member_required
 def bacnet_light(request, id):
 	light = get_object_or_404(BACNetLight, pk=id)

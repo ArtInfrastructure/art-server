@@ -4,6 +4,60 @@
 
 {% block style %}
 #content th { font-weight: bold; }
+#content tr { line-height: 1.8em; }
+#content td input { margin-top: 0.2em; }
+#command-table th { text-align: left; }
+#command-table td:first-child { width: 200px; padding-right: 2em; }
+#command-table tr { border-bottom: solid 1px #DDD; }
+
+#command-form {
+	margin: 2em 0 0 0;
+}
+#command-form input[type="text"]{ width: 80%; }
+{% endblock %}
+
+{% block sub-head %}
+<script type="text/javascript">
+$(document).ready(function() { 
+	$('button[name="high-up"]').click(function(){ changeCrestonSetting('high-up'); });
+	$('button[name="high-down"]').click(function(){ changeCrestonSetting('high-down'); });
+	$('button[name="low-up"]').click(function(){ changeCrestonSetting('low-up'); });
+	$('button[name="low-down"]').click(function(){ changeCrestonSetting('low-down'); });
+
+	$('#command-form').submit(function(){ sendCommand(); return false; });
+	$('button[name="send-command-button"]').click(function(){ sendCommand(); return false; });
+});
+
+function sendCommand(){
+	command = $('#id_command').val();
+	console.log('command', command);
+	if(command == '') return;
+	console.log( $('#command-form').serialize());
+	$('#command-result').html('<h3>Sending...</h3>');
+	$.ajax({
+			type: "POST",
+			data: $('#command-form').serialize(),
+			url: "{% url lighting.views.creston %}",
+			success: function(msg){
+				console.log('result', msg)
+				$('#command-result').html('<h3>Result:</h3><pre>' + msg + "</pre>");
+			}
+	});
+	$('#id_command').val('');
+}
+
+function changeCrestonSetting(action, value){
+	post_data = { 'action':action };
+	if(value) data['value'] = value;
+	$.ajax({
+			type: "POST",
+			data: post_data,
+			url: "{% url lighting.views.creston %}",
+			success: function(msg){ window.location.reload();
+		}
+	});
+}
+</script>
 {% endblock %}
 
 {% block content%}
@@ -19,11 +73,19 @@
     </tr>
     <tr>
         <th>High:</th>
-        <td>{{ control_info.High }}</td>
+        <td>
+           {{ control_info.High }}
+           <button type=button name='high-up'>Up</button>
+           <button type=button name='high-down'>Down</button>
+        </td>
     </tr>
     <tr>
         <th>Low:</th>
-        <td>{{ control_info.Low }}</td>
+        <td>
+            {{ control_info.Low }}
+           <button type=button name='low-up'>Up</button>
+           <button type=button name='low-down'>Down</button>
+        </td>
     </tr>
     <tr>
         <th>Wake:</th>
@@ -41,6 +103,197 @@
         <th>Lamp 2:</th>
         <td>{{ control_info.Lamp2 }}</td>
     </tr>
+</table>
+
+<form action='.' method='post' id="command-form">
+	<h2>Send a command:</h2>
+	{% for field in command_form %}{{ field }}{% endfor %}
+	<button type="button" name="send-command-button">Send</button>
+	{% csrf_token %}
+</form>
+
+<div id="command-result">
+</div>
+
+<h2>Commands:</h2>
+<table id="command-table">
+	<tr>
+		<th>Function</th><th>Send Command</th><th>Receive Command</th>
+	</tr>
+	<tr>
+		<td>To check communication</td>
+		<td>Ping</td>
+		<td>Pong</td>
+	</tr>
+	<tr>
+		<td>To view the status of the system</td>
+		<td>Update</td>
+		<td>Current-#####
+			<br/>Low-#####
+			<br/>High-#####
+			<br/>Lamp1-1-####
+			<br/>Lamp1-2-####
+			<br/>Lamp2-1-####
+			<br/>Lamp2-2-####
+			<br/>Wake-##:##:##
+			<br/>Sleep-##:##:##
+		</td>
+	</tr>
+	<tr>
+		<td>For help with list of Commands</td>
+		<td>Help</td>
+		<td>List Commands</td>
+	</tr>
+	<tr>
+		<td>Dim On/Off Toggle</td>
+		<td>EnableDim</td>
+		<td>DimEnabled or DimDisabled</td>
+	</tr>
+	<tr>
+		<td>To adjust the Dim sensitivity up</td>
+		<td>DimLvlUp</td>
+		<td>Low-#####</td>
+	</tr>
+	<tr>
+		<td>To adjust the Dim sensitivity down</td>
+		<td>DimLvlDown</td>
+		<td>Low-#####</td>
+	</tr>
+	<tr>
+		<td>High On/Off Toggle</td>
+		<td>EnableHigh</td>
+		<td>HighEnabled or HighDisabled</td>
+	</tr>
+	<tr>
+		<td>To adjust the high sensitivity brightness up</td>
+		<td>HighLvlUp</td>
+		<td>High-#####</td>
+	</tr>
+	<tr>
+		<td>To adjust the high sensitivity brightness down</td>
+		<td>HighLvlDown</td>
+		<td>High-#####</td>
+	</tr>
+	<tr>
+		<td>To store a Dim and High memory preset level</td>
+		<td>MemoryStore</td>
+		<td>MemoryStored</td>
+	</tr>
+	<tr>
+		<td>To recall a Dim and High memory preset level</td>
+		<td>MemoryRecall</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To turn on the left projector</td>
+		<td>Display1On</td>
+		<td>Display1On</td>
+	</tr>
+	<tr>
+		<td>To turn off the left projector</td>
+		<td>Display1Off</td>
+		<td>Display1Off</td>
+	</tr>
+	<tr>
+		<td>To view DVI Input on left projector</td>
+		<td>Display1DVI</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the image brightness of the left projector to its highest level</td>
+		<td>Display1HighBright</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the image brightness to its lowest level</td>
+		<td>Display1LowBright</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td></td>
+		<td>Lamp1-1 Lamp1-2</td>
+	</tr>
+	<tr>
+		<td>To turn on the right projector</td>
+		<td>Display2On</td>
+		<td>Display2On</td>
+	</tr>
+	<tr>
+		<td>To turn off the right projector</td>
+		<td>Display2Off</td>
+		<td>Display2Off</td>
+	</tr>
+	<tr>
+		<td>To view DVI input on right projector</td>
+		<td>Display2DVI</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the image brightness of the right projector to its highest level</td>
+		<td>Display2HighBright</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the image brightness of the right projector to its lowest level</td>
+		<td>Display2LowBright</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td></td>
+		<td>Lamp2-1 Lamp2-2</td>
+	</tr>
+	<tr>
+		<td>This is to set a specified time for projectors to power On/Off Toggle</td>
+		<td>WakeEnable</td>
+		<td>WakeEnable Wake-##:##:##</td>
+	</tr>
+	<tr>
+		<td>To adjust the hour parameter up for turning on the system</td>
+		<td>WakeHrUp</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the hour parameter down for turning on the system</td>
+		<td>WakeHrDown</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the minute parameter up for turning on the system</td>
+		<td>WakeMinUp</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the minute parameter down for turning on the system</td>
+		<td>WakeMinDown</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Projector power timer to set powering down of both projectors after a specified amount of time</td>
+		<td>SleepEnable</td>
+		<td>SleepEnable Sleep-##:##:##</td>
+	</tr>
+	<tr>
+		<td>To adjust the hour parameter up for the projector sleep function</td>
+		<td>SleepHrUp</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the hour parameter down for the projector sleep function</td>
+		<td>SleepHrDown</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the minute parameter up for the projector sleep function</td>
+		<td>SleepMinUp</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>To adjust the minute parameter down for the projector sleep function</td>
+		<td>SleepMinDown</td>
+		<td></td>
+	</tr>
 </table>
 
 {% endblock %}

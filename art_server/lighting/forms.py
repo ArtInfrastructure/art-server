@@ -4,6 +4,9 @@ from django import forms
 from models import ProjectorEvent
 from front.forms import BaseEventForm
 
+class CrestonCommandForm(forms.Form):
+	command = forms.CharField()
+
 class LightControlForm(forms.Form):
 	light_value = forms.CharField()
 

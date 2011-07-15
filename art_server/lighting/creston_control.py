@@ -16,6 +16,12 @@ class CrestonControl(object):
 
 	def ping(self): return self.send_command('Ping')
 
+	def raise_high(self): return self.send_command('HighLvlUp')
+	def lower_high(self): return self.send_command('HighLvlDown')
+
+	def raise_low(self): return self.send_command('DimLvlUp')
+	def lower_low(self): return self.send_command('DimLvlDown')
+
 	def query_status(self):
 		"""
 		Returns a map of status values like so:
